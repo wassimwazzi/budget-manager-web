@@ -18,11 +18,13 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 import category.views
+import currency.views
 import transaction.views
 
 router = routers.DefaultRouter()
-router.register(r"category", category.views.CategoryView, "category")
-router.register(r"transaction", transaction.views.TransactionView, "transaction")
+router.register(r"categories", category.views.CategoryView, "categories")
+router.register(r"currencies", currency.views.CurrencyView, "currencies")
+router.register(r"transactions", transaction.views.TransactionView, "transactions")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
