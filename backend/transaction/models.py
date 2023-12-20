@@ -21,7 +21,7 @@ class Transaction(models.Model):
     description = models.CharField(max_length=255, null=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.PROTECT)
     inferred_category = models.BooleanField(default=False)
-    file_id = models.ForeignKey(
+    file = models.ForeignKey(
         FileUpload, on_delete=models.PROTECT, null=True, blank=True
     )
     user = models.ForeignKey(User, on_delete=models.CASCADE)

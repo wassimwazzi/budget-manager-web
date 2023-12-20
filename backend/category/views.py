@@ -1,3 +1,15 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from .serializers import CategorySerializer
+from .models import Category
 
-# Create your views here.
+
+class CategoryView(viewsets.ModelViewSet):
+    serializer_class = CategorySerializer
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the categories
+        for the currently authenticated user.
+        """
+        user = self.request.user
+        return Category.objects.filter(user=user)
