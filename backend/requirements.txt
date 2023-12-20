@@ -1,3 +1,4 @@
 factory_boy
 djangorestframework
 django-cors-headers
+django_extensions
