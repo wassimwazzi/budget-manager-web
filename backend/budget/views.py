@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .serializers import BudgetSerializer
 from .models import Budget
 from category.models import Category
+import datetime
 
 
 class BudgetView(viewsets.ModelViewSet):
@@ -11,7 +12,7 @@ class BudgetView(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """
-        This view should return a list of all the transactions
+        This view should return a list of all the budgets
         for the currently authenticated user.
         """
         user = self.request.user
@@ -29,11 +30,12 @@ class BudgetView(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["get"])
     def budget_summary(self, request):
-        user = self.request.user
-        budgets = Budget.objects.filter(user=user)
-        total_budget = 0
-        total_spent = 0
-        for budget in budgets:
-            total_budget += budget.budget
-            total_spent += budget.spent
-        return Response({"total_budget": total_budget, "total_spent": total_spent})
+        month = request.query_params.get("month")
+        if not month:
+            return Response({"error": "month param is required"}, status=400)
+        try:
+            month = datetime.datetime.strptime(month, "%Y-%m").date()
+        except ValueError:
+            return Response({"error": "month must be in YYYY-MM format"}, status=400)
+        budget_summary = Budget.get_budget_by_category(month, request.user)
+        return Response(budget_summary, status=200)

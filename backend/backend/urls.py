@@ -21,11 +21,13 @@ from rest_framework.authtoken.views import obtain_auth_token
 import category.views
 import currency.views
 import transaction.views
+import budget.views
 
 router = routers.DefaultRouter()
 router.register(r"categories", category.views.CategoryView, "categories")
 router.register(r"currencies", currency.views.CurrencyView, "currencies")
 router.register(r"transactions", transaction.views.TransactionView, "transactions")
+router.register(r"budgets", budget.views.BudgetView, "budgets")
 
 urlpatterns = [
     path("admin/", admin.site.urls),
