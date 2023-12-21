@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import api from '../../api'
-import { Form, Button } from 'react-bootstrap'
+import { Form, Button, Alert } from 'react-bootstrap'
 
 const TransactionForm = ({ transactionId, onUpdate }) => {
   const [formData, setFormData] = useState({
@@ -16,6 +16,8 @@ const TransactionForm = ({ transactionId, onUpdate }) => {
   const [currencies, setCurrencies] = useState([])
   const [currentTransactionId, setCurrentTransactionId] =
     useState(transactionId)
+  const [successMessage, setSuccessMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     setCurrentTransactionId(transactionId)
@@ -84,11 +86,15 @@ const TransactionForm = ({ transactionId, onUpdate }) => {
       data: formData
     })
       .then(response => {
+        setSuccessMessage('Transaction successfully submitted!')
+        setErrorMessage(null)
         onUpdate(response.data)
         handleClear()
       })
       .catch(error => {
-        console.error('Error submitting transaction data:', error)
+        setSuccessMessage(null)
+        setErrorMessage(error.response.data)
+        console.error('Error submitting transaction data:', error.response.data)
       })
   }
 
@@ -171,6 +177,18 @@ const TransactionForm = ({ transactionId, onUpdate }) => {
           ))}
         </Form.Select>
       </Form.Group>
+
+      {successMessage && (
+        <Alert variant='success' className='mt-3'>
+          {successMessage}
+        </Alert>
+      )}
+
+      {errorMessage && (
+        <Alert variant='danger' className='mt-3'>
+          {errorMessage}
+        </Alert>
+      )}
 
       <div className='mb-3'>
         <Button type='submit' variant='primary'>
