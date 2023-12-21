@@ -10,6 +10,7 @@ class Category(models.Model):
     Category Model
     """
 
+    id = models.AutoField(primary_key=True)
     category = models.CharField(max_length=20)
     income = models.BooleanField(default=False)
     description = models.CharField(max_length=255)

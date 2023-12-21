@@ -24,4 +24,4 @@ class TransactionSerializer(serializers.ModelSerializer):
             "file",
             "user",
         )
-        read_only_fields = ("id", "user")
+        read_only_fields = ("id", "user", "inferred_category", "file")
