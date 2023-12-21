@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import api from '../../api'
-import { Form, Button, Alert } from 'react-bootstrap'
+import { Form, Button, Alert, InputGroup } from 'react-bootstrap'
 
 const TransactionForm = ({ transactionId, categories, currencies, onUpdate }) => {
   const [formData, setFormData] = useState({
@@ -113,7 +113,8 @@ const TransactionForm = ({ transactionId, categories, currencies, onUpdate }) =>
 
       <Form.Group className='mb-3'>
         <Form.Label>Category:</Form.Label>
-        <Form.Select
+        <Form.Control
+          as='select'
           name='category'
           value={formData.category}
           onChange={handleChange}
@@ -125,36 +126,39 @@ const TransactionForm = ({ transactionId, categories, currencies, onUpdate }) =>
               {category.category}
             </option>
           ))}
-        </Form.Select>
+        </Form.Control>
       </Form.Group>
 
-      <Form.Group className='mb-3'>
-        <Form.Label>Amount:</Form.Label>
-        <Form.Control
-          type='number'
-          name='amount'
-          value={formData.amount}
-          onChange={handleChange}
-          required
-        />
-      </Form.Group>
+      <InputGroup className='mb-3'>
+        <Form.Group className='mr-3'>
+          <Form.Label>Amount:</Form.Label>
+          <Form.Control
+            type='number'
+            name='amount'
+            value={formData.amount}
+            onChange={handleChange}
+            required
+          />
+        </Form.Group>
+        <Form.Group className='mb-3'>
+          <Form.Label>Currency:</Form.Label>
+          <Form.Control
+            as='select'
+            name='currency'
+            value={formData.currency}
+            onChange={handleChange}
+            required
+          >
+            <option value=''>Select currency</option>
+            {currencies.map(currency => (
+              <option key={currency.code} value={currency.code}>
+                {currency.code}
+              </option>
+            ))}
+          </Form.Control>
+        </Form.Group>
+      </InputGroup>
 
-      <Form.Group className='mb-3'>
-        <Form.Label>Currency:</Form.Label>
-        <Form.Select
-          name='currency'
-          value={formData.currency}
-          onChange={handleChange}
-          required
-        >
-          <option value=''>Select currency</option>
-          {currencies.map(currency => (
-            <option key={currency.code} value={currency.code}>
-              {currency.code}
-            </option>
-          ))}
-        </Form.Select>
-      </Form.Group>
 
       {successMessage && (
         <Alert variant='success' className='mt-3'>

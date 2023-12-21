@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import api from '../../api'
-import { Form, Button, Alert } from 'react-bootstrap'
+import { Form, InputGroup, FormControl, Button, Alert } from 'react-bootstrap'
 
 const BudgetForm = ({ budgetId, categories, currencies, onUpdate }) => {
     const initialFormData = Object.freeze({
@@ -75,7 +75,7 @@ const BudgetForm = ({ budgetId, categories, currencies, onUpdate }) => {
 
             <Form.Group className='mb-3'>
                 <Form.Label>Start Month</Form.Label>
-                <Form.Control
+                <FormControl
                     type='month'
                     name='start_date'
                     value={formData.start_date}
@@ -84,36 +84,9 @@ const BudgetForm = ({ budgetId, categories, currencies, onUpdate }) => {
             </Form.Group>
 
             <Form.Group className='mb-3'>
-                <Form.Label>Amount:</Form.Label>
-                <Form.Control
-                    type='number'
-                    name='amount'
-                    value={formData.amount}
-                    onChange={handleChange}
-                />
-            </Form.Group>
-
-            <Form.Group className='mb-3'>
-                <Form.Label>Currency:</Form.Label>
+                <Form.Label>Category:</Form.Label>
                 <Form.Control
                     as='select'
-                    name='currency'
-                    value={formData.currency}
-                    onChange={handleChange}
-                >
-                    <option value=''>Select a currency</option>
-                    {
-                        currencies.map(currency => (
-                            <option key={currency.code} value={currency.code}>{currency.code}</option>
-                        ))
-                    }
-                </Form.Control>
-            </Form.Group>
-
-
-            <Form.Group className='mb-3'>
-                <Form.Label>Category:</Form.Label>
-                <Form.Select
                     name='category'
                     value={formData.category.id}
                     onChange={handleChange}
@@ -126,8 +99,38 @@ const BudgetForm = ({ budgetId, categories, currencies, onUpdate }) => {
                             </option>
                         ))
                     }
-                </Form.Select>
+                </Form.Control>
             </Form.Group>
+
+            <InputGroup className='mb-3'>
+                <Form.Group className='mr-3'>
+                    <Form.Label>Amount:</Form.Label>
+                    <Form.Control
+                        type='number'
+                        name='amount'
+                        value={formData.amount}
+                        onChange={handleChange}
+                        required
+                    />
+                </Form.Group>
+                <Form.Group className='mb-3'>
+                    <Form.Label>Currency:</Form.Label>
+                    <Form.Control
+                        as='select'
+                        name='currency'
+                        value={formData.currency}
+                        onChange={handleChange}
+                        required
+                    >
+                        <option value=''>Select currency</option>
+                        {currencies.map(currency => (
+                            <option key={currency.code} value={currency.code}>
+                                {currency.code}
+                            </option>
+                        ))}
+                    </Form.Control>
+                </Form.Group>
+            </InputGroup>
 
             {
                 successMessage && (
