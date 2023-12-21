@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import SearchTable from "./SearchTable";
-
+import Table from "./Table";
 
 
 const SearchableTable = ({ data, columns, searchHandler }) => {
@@ -27,28 +27,10 @@ const SearchableTable = ({ data, columns, searchHandler }) => {
     };
 
     return (
-        <div>
+        <>
             <SearchTable columns={columns} onSearch={handleSearch} />
-
-            <table className='table table-striped'>
-                <thead>
-                    <tr>
-                        {columns.map(column => (
-                            <th key={column}>{column}</th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredData.map((row, index) => (
-                        <tr key={index}>
-                            {columns.map(column => (
-                                <td key={column}>{row[column]}</td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
+            <Table data={filteredData} columns={columns} />
+        </>
     );
 };
 

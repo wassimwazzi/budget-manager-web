@@ -43,7 +43,7 @@ class BudgetView(viewsets.ModelViewSet):
             serializer.save()
 
     @action(detail=False, methods=["get"])
-    def budget_summary(self, request):
+    def summary(self, request):
         month = request.query_params.get("month")
         if not month:
             return Response({"error": "month param is required"}, status=400)

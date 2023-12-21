@@ -19,7 +19,11 @@ const BudgetForm = ({ budgetId, categories, currencies, onUpdate }) => {
             api
                 .get(`/api/budgets/${budgetId}`)
                 .then(response => {
-                    setFormData(response.data)
+                    setFormData({
+                        ...response.data,
+                        category: response.data.category.id,
+                        start_date: response.data.start_date.substring(0, 7) // YYYY-MM
+                    })
                 })
                 .catch(error => {
                     console.error('Error fetching budget data:', error)
@@ -45,6 +49,7 @@ const BudgetForm = ({ budgetId, categories, currencies, onUpdate }) => {
         const apiUrl = budgetId
             ? `/api/budgets/${budgetId}/`
             : '/api/budgets/'
+        formData.start_date += '-01'
 
         api({
             method: budgetId ? 'put' : 'post',
@@ -73,7 +78,7 @@ const BudgetForm = ({ budgetId, categories, currencies, onUpdate }) => {
                 <Form.Control
                     type='month'
                     name='start_date'
-                    value={formData.start_date.split('-').slice(0, 2).join('-')}
+                    value={formData.start_date}
                     onChange={handleChange}
                 />
             </Form.Group>
@@ -110,7 +115,7 @@ const BudgetForm = ({ budgetId, categories, currencies, onUpdate }) => {
                 <Form.Label>Category:</Form.Label>
                 <Form.Select
                     name='category'
-                    value={formData.category}
+                    value={formData.category.id}
                     onChange={handleChange}
                 >
                     <option value=''>Select category</option>

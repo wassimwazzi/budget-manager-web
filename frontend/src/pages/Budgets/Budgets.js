@@ -44,8 +44,10 @@ const Budgets = () => {
         api
             .get(url)
             .then(response => {
+                console.log(response.data)
                 setBudgets(response.data.map(budget => ({
                     ...budget,
+                    category: budget.category.category,
                     actions: <button onClick={() => handleEdit(budget.id)} className='btn btn-primary'>Edit</button>
                 })))
             })
@@ -59,7 +61,7 @@ const Budgets = () => {
     }, [])
 
     const handleEdit = budgetId => {
-        setEditBudgetId(() => budgetId)
+        setEditBudgetId(budgetId)
     }
 
     const handleFormUpdate = updatedBudget => {
