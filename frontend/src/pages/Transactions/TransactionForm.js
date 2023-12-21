@@ -68,7 +68,8 @@ const TransactionForm = ({ transactionId, categories, currencies, onUpdate }) =>
       data: formData
     })
       .then(response => {
-        setSuccessMessage('Transaction successfully submitted!')
+        const action = currentTransactionId ? 'updated' : 'created'
+        setSuccessMessage(`Transasction successfully ${action}!`)
         setErrorMessage(null)
         onUpdate(response.data)
         handleClear()

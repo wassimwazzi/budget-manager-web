@@ -30,6 +30,9 @@ const Layout = () => {
             <Nav.Link as={Link} to='/transactions'>
               Transactions
             </Nav.Link>
+            <Nav.Link as={Link} to='/categories'>
+              Categories
+            </Nav.Link>
           </Nav>
           <Nav>
             <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
