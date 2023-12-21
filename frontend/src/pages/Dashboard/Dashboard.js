@@ -50,6 +50,19 @@ function getCurrentMonth() {
     return `${year}-${month}`;
 }
 
+function convertToMonthYear(yyyyMM) {
+    const [year, month] = yyyyMM.split('-');
+    const date = new Date(Date.UTC(year, month, 1));
+
+    const monthFormatter = new Intl.DateTimeFormat('en', { month: 'long' });
+    const yearFormatter = new Intl.DateTimeFormat('en', { year: 'numeric' });
+
+    const monthName = monthFormatter.formatToParts(date).find(part => part.type === 'month').value;
+    const fullYear = yearFormatter.formatToParts(date).find(part => part.type === 'year').value;
+
+    return `${monthName} ${fullYear}`;
+}
+
 const Dashboard = () => {
     const [budget_summary, setBudgetSummary] = useState([])
     const [month, setMonth] = useState(getCurrentMonth())
@@ -98,9 +111,8 @@ const Dashboard = () => {
 
     return (
         <>
-            <h1>Dashboard</h1>
+            <h1>Budget Summary for {convertToMonthYear(month)}</h1>
             <SummaryForm onUpdate={handleUpdate} />
-            <h2>Budget Summary for {month}</h2>
             <table className='table table-striped'>
                 <thead>
                     <tr>
