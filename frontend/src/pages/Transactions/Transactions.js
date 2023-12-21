@@ -1,26 +1,23 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../api'
 import TransactionForm from './TransactionForm'
+import TableNavigator from '../../components/TableNavigator'
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([])
-  const [loading, setLoading] = useState(true)
   const [editTransactionId, setEditTransactionId] = useState(null)
+  const [totalPages, setTotalPages] = useState(1)
 
-  useEffect(() => {
-    fetchData()
-  }, [])
-
-  const fetchData = () => {
+  const fetchData = page => {
     api
-      .get('/api/transactions')
+      .get(`/api/transactions/?page=${page}`)
       .then(response => {
-        setTransactions(response.data)
-        setLoading(false)
+        let data = response.data
+        setTransactions(data.results)
+        setTotalPages(Math.max(1, Math.ceil(data.count / data.results.length)))
       })
       .catch(error => {
         console.error('Error fetching data:', error)
-        setLoading(false)
       })
   }
 
@@ -88,6 +85,7 @@ const Transactions = () => {
           ))}
         </tbody>
       </table>
+      <TableNavigator totalPages={totalPages} fetchData={fetchData} />
     </div>
   )
 }

@@ -37,7 +37,7 @@ const Layout = () => {
         </Navbar.Collapse>
       </Navbar>
 
-      <Container style={{ marginTop: '20px' }}>
+      <Container style={{ margin: '20px' }}>
         <Outlet />
       </Container>
     </Container>

@@ -5,6 +5,7 @@ from .models import Category
 
 class CategoryView(viewsets.ModelViewSet):
     serializer_class = CategorySerializer
+    pagination_class = None
 
     def get_queryset(self):
         """

@@ -24,15 +24,15 @@ class TransactionAPITestCase(TestCase):
         transaction = TransactionFactory(user=self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-        self.assertDictEqual(response.data[0], TransactionSerializer(transaction).data)
+        self.assertEqual(response.data["count"], 1)
+        self.assertDictEqual(response.data["results"][0], TransactionSerializer(transaction).data)
 
     def test_transaction_list_does_not_return_other_users_transactions(self):
         user2 = User.objects.create_user(username="testuser2", password="testpassword2")
         TransactionFactory(user=user2)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 0)
+        self.assertEqual(response.data["count"], 0)
 
     def test_transaction_api_create(self):
         transaction_data = {

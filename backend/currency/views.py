@@ -5,6 +5,7 @@ from .models import Currency
 
 class CurrencyView(viewsets.ModelViewSet):
     serializer_class = CurrencySerializer
+    pagination_class = None
 
     def get_queryset(self):
         """
