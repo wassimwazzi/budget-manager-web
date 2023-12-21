@@ -15,6 +15,15 @@ class TransactionView(viewsets.ModelViewSet):
         for the currently authenticated user.
         """
         user = self.request.user
+        filter_field = self.request.query_params.get("filter", None)
+        filter_value = self.request.query_params.get("filter_value", None)
+        if filter_field and filter_value:
+            # validate filter is a valid field
+            if filter_field not in [f.name for f in Transaction._meta.get_fields()]:
+                raise serializers.ValidationError("Invalid filter")
+            return Transaction.objects.filter(
+                user=user, **{f"{filter_field}__icontains": filter_value}
+            )
         return Transaction.objects.filter(user=user)
 
     def validate_date(self):

@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import SearchTable from "./SearchTable";
 
-const Table = ({ data, columns }) => {
+
+
+const SearchableTable = ({ data, columns, searchHandler }) => {
     const [filteredData, setFilteredData] = useState(data);
 
     useEffect(() => {
@@ -9,14 +11,19 @@ const Table = ({ data, columns }) => {
     }, [data]);
 
     const handleSearch = (searchTerm, selectedColumn) => {
-        const lowerCaseSearchTerm = searchTerm.toLowerCase();
+        if (searchHandler) {
+            searchHandler(searchTerm, selectedColumn);
+        }
+        else {
+            const lowerCaseSearchTerm = searchTerm.toLowerCase();
 
-        // Use filter to find rows that match the search term in the specified column
-        const filteredRows = data.filter(row =>
-            String(row[selectedColumn]).toLowerCase().includes(lowerCaseSearchTerm)
-        );
+            // Use filter to find rows that match the search term in the specified column
+            const filteredRows = data.filter(row =>
+                String(row[selectedColumn]).toLowerCase().includes(lowerCaseSearchTerm)
+            );
 
-        setFilteredData(filteredRows);
+            setFilteredData(filteredRows);
+        }
     };
 
     return (
@@ -45,4 +52,4 @@ const Table = ({ data, columns }) => {
     );
 };
 
-export default Table;
+export default SearchableTable;

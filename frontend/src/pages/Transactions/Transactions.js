@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import api from '../../api'
 import TransactionForm from './TransactionForm'
 import TableNavigator from '../../components/table/TableNavigator'
-import Table from '../../components/table/Table'
+import SearchableTable from '../../components/table/SearchableTable'
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([])
@@ -41,12 +41,15 @@ const Transactions = () => {
     'actions'
   ]
 
-  const fetchData = page => {
+  const fetchData = (page, filter = null, filter_value = null) => {
+    let url = `/api/transactions/?page=${page}`
+    if (filter && filter_value) {
+      url += `&filter=${filter}&filter_value=${filter_value}`
+    }
     api
-      .get(`/api/transactions/?page=${page}`)
+      .get(url)
       .then(response => {
         let data = response.data
-        // setTransactions(data.results)
         setTransactions(data.results.map(transaction => ({
           ...transaction,
           category: transaction.category.category,
@@ -87,6 +90,10 @@ const Transactions = () => {
     }
   }
 
+  const searchHandler = (searchTerm, selectedColumn) => {
+    fetchData(1, selectedColumn, searchTerm)
+  };
+
   return (
     <>
       <h1>Transactions</h1>
@@ -98,9 +105,10 @@ const Transactions = () => {
         onUpdate={handleFormUpdate}
       />
 
-      <Table
+      <SearchableTable
         columns={columns}
         data={transactions}
+        searchHandler={searchHandler}
       />
 
       <TableNavigator totalPages={totalPages} fetchData={fetchData} />
