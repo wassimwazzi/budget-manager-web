@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../api'
 import CategoryForm from './CategoryForm'
-import TableNavigator from '../../components/table/TableNavigator'
 import SearchableTable from '../../components/table/SearchableTable'
 
 const Categories = () => {
@@ -58,6 +57,7 @@ const Categories = () => {
         } else {
             setCategories([updatedCategory, ...categories])
         }
+        setEditCategoryId(null)
     }
 
     return (

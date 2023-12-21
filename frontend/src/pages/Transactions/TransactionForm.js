@@ -11,14 +11,10 @@ const TransactionForm = ({ transactionId, categories, currencies, onUpdate }) =>
     amount: '',
     currency: ''
   })
-
-  const [currentTransactionId, setCurrentTransactionId] =
-    useState(transactionId)
   const [successMessage, setSuccessMessage] = useState(null)
   const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
-    setCurrentTransactionId(transactionId)
 
     if (transactionId) {
       api
@@ -52,23 +48,22 @@ const TransactionForm = ({ transactionId, categories, currencies, onUpdate }) =>
       amount: '',
       currency: ''
     })
-    setCurrentTransactionId(null)
   }
 
   const handleSubmit = e => {
     e.preventDefault()
 
-    const apiUrl = currentTransactionId
-      ? `/api/transactions/${currentTransactionId}/`
+    const apiUrl = transactionId
+      ? `/api/transactions/${transactionId}/`
       : '/api/transactions/'
 
     api({
-      method: currentTransactionId ? 'put' : 'post',
+      method: transactionId ? 'put' : 'post',
       url: apiUrl,
       data: formData
     })
       .then(response => {
-        const action = currentTransactionId ? 'updated' : 'created'
+        const action = transactionId ? 'updated' : 'created'
         setSuccessMessage(`Transasction successfully ${action}!`)
         setErrorMessage(null)
         onUpdate(response.data)
@@ -175,7 +170,7 @@ const TransactionForm = ({ transactionId, categories, currencies, onUpdate }) =>
 
       <div className='mb-3'>
         <Button type='submit' variant='primary'>
-          {currentTransactionId ? 'Update' : 'Create'}
+          {transactionId ? 'Update' : 'Create'}
         </Button>
         <Button
           type='button'

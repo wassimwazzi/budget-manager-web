@@ -2,29 +2,30 @@ import React, { useState, useEffect } from 'react'
 import api from '../../api'
 import { Form, Button, Alert } from 'react-bootstrap'
 
-const CategoryForm = ({ categoryId, onUpdate }) => {
+const BudgetForm = ({ budgetId, categories, currencies, onUpdate }) => {
     const initialFormData = Object.freeze({
-        income: '',
+        amount: '',
+        currency: '',
+        start_date: '',
         category: '',
-        description: '',
     })
     const [formData, setFormData] = useState(initialFormData)
+
     const [successMessage, setSuccessMessage] = useState(null)
     const [errorMessage, setErrorMessage] = useState(null)
 
     useEffect(() => {
-
-        if (categoryId) {
+        if (budgetId) {
             api
-                .get(`/api/categories/${categoryId}`)
+                .get(`/api/budgets/${budgetId}`)
                 .then(response => {
                     setFormData(response.data)
                 })
                 .catch(error => {
-                    console.error('Error fetching category data:', error)
+                    console.error('Error fetching budget data:', error)
                 })
         }
-    }, [categoryId])
+    }, [budgetId])
 
     const handleChange = e => {
         const { name, value } = e.target
@@ -41,18 +42,18 @@ const CategoryForm = ({ categoryId, onUpdate }) => {
     const handleSubmit = e => {
         e.preventDefault()
 
-        const apiUrl = categoryId
-            ? `/api/categories/${categoryId}/`
-            : '/api/categories/'
+        const apiUrl = budgetId
+            ? `/api/budgets/${budgetId}/`
+            : '/api/budgets/'
 
         api({
-            method: categoryId ? 'put' : 'post',
+            method: budgetId ? 'put' : 'post',
             url: apiUrl,
             data: formData
         })
             .then(response => {
-                const action = categoryId ? 'updated' : 'created'
-                setSuccessMessage(`Category successfully ${action}!`)
+                const action = budgetId ? 'updated' : 'created'
+                setSuccessMessage(`Budget successfully ${action}!`)
                 setErrorMessage(null)
                 onUpdate(response.data)
                 handleClear()
@@ -60,7 +61,7 @@ const CategoryForm = ({ categoryId, onUpdate }) => {
             .catch(error => {
                 setSuccessMessage(null)
                 setErrorMessage(error.response.data)
-                console.error('Error submitting category data:', error.response.data)
+                console.error('Error submitting budget data:', error.response.data)
             })
     }
 
@@ -68,34 +69,59 @@ const CategoryForm = ({ categoryId, onUpdate }) => {
         <Form onSubmit={handleSubmit}>
 
             <Form.Group className='mb-3'>
-                <Form.Label>Category:</Form.Label>
+                <Form.Label>Start Month</Form.Label>
                 <Form.Control
-                    type='text'
+                    type='month'
+                    name='start_date'
+                    value={formData.start_date.split('-').slice(0, 2).join('-')}
+                    onChange={handleChange}
+                />
+            </Form.Group>
+
+            <Form.Group className='mb-3'>
+                <Form.Label>Amount:</Form.Label>
+                <Form.Control
+                    type='number'
+                    name='amount'
+                    value={formData.amount}
+                    onChange={handleChange}
+                />
+            </Form.Group>
+
+            <Form.Group className='mb-3'>
+                <Form.Label>Currency:</Form.Label>
+                <Form.Control
+                    as='select'
+                    name='currency'
+                    value={formData.currency}
+                    onChange={handleChange}
+                >
+                    <option value=''>Select a currency</option>
+                    {
+                        currencies.map(currency => (
+                            <option key={currency.code} value={currency.code}>{currency.code}</option>
+                        ))
+                    }
+                </Form.Control>
+            </Form.Group>
+
+
+            <Form.Group className='mb-3'>
+                <Form.Label>Category:</Form.Label>
+                <Form.Select
                     name='category'
                     value={formData.category}
                     onChange={handleChange}
-                    required
-                />
-            </Form.Group>
-
-
-            <Form.Group className='mb-3'>
-                <Form.Label>Description:</Form.Label>
-                <Form.Control
-                    type='text'
-                    name='description'
-                    value={formData.description}
-                    onChange={handleChange}
-                />
-            </Form.Group>
-
-            <Form.Group className='mb-3'>
-                <Form.Check
-                    type='switch'
-                    label='Income'
-                    checked={formData.income}
-                    onChange={handleChange}
-                />
+                >
+                    <option value=''>Select category</option>
+                    {
+                        categories.map(category => (
+                            <option key={category.id} value={category.id}>
+                                {category.category}
+                            </option>
+                        ))
+                    }
+                </Form.Select>
             </Form.Group>
 
             {
@@ -116,7 +142,7 @@ const CategoryForm = ({ categoryId, onUpdate }) => {
 
             <div className='mb-3'>
                 <Button type='submit' variant='primary'>
-                    {categoryId ? 'Update' : 'Create'}
+                    {budgetId ? 'Update' : 'Create'}
                 </Button>
                 <Button
                     type='button'
@@ -131,4 +157,4 @@ const CategoryForm = ({ categoryId, onUpdate }) => {
     )
 }
 
-export default CategoryForm
+export default BudgetForm

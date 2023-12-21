@@ -88,6 +88,7 @@ const Transactions = () => {
     } else {
       setTransactions([updatedTransaction, ...transactions])
     }
+    setEditTransactionId(null)
   }
 
   const searchHandler = (searchTerm, selectedColumn) => {

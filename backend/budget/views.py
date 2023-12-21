@@ -5,10 +5,12 @@ from .serializers import BudgetSerializer
 from .models import Budget
 from category.models import Category
 import datetime
+import rest_framework.serializers as serializers
 
 
 class BudgetView(viewsets.ModelViewSet):
     serializer_class = BudgetSerializer
+    pagination_class = None
 
     def get_queryset(self):
         """
@@ -19,14 +21,26 @@ class BudgetView(viewsets.ModelViewSet):
         return Budget.objects.filter(user=user)
 
     def perform_create(self, serializer):
-        category = self.request.data.get("category")
-        category = Category.objects.get(category=category)
-        serializer.save(user=self.request.user, category=category)
+        category_id = self.request.data.get("category")
+        if category_id:
+            try:
+                category = Category.objects.get(id=category_id)
+            except (Category.DoesNotExist, ValueError) as e:
+                raise serializers.ValidationError("Category not found: {}".format(e))
+            serializer.save(category=category, user=self.request.user)
+        else:
+            serializer.save(user=self.request.user)
 
     def perform_update(self, serializer):
-        category = self.request.data.get("category")
-        category = Category.objects.get(category=category)
-        serializer.save(user=self.request.user, category=category)
+        category_id = self.request.data.get("category")
+        if category_id:
+            try:
+                category = Category.objects.get(id=category_id)
+            except (Category.DoesNotExist, ValueError) as e:
+                raise serializers.ValidationError("Category not found: {}".format(e))
+            serializer.save(category=category)
+        else:
+            serializer.save()
 
     @action(detail=False, methods=["get"])
     def budget_summary(self, request):
