@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import api from '../../api'
 import { Form, Button, Alert } from 'react-bootstrap'
 
-const TransactionForm = ({ transactionId, onUpdate }) => {
+const TransactionForm = ({ transactionId, categories, currencies, onUpdate }) => {
   const [formData, setFormData] = useState({
     date: '',
     code: '',
@@ -12,8 +12,6 @@ const TransactionForm = ({ transactionId, onUpdate }) => {
     currency: ''
   })
 
-  const [categories, setCategories] = useState([])
-  const [currencies, setCurrencies] = useState([])
   const [currentTransactionId, setCurrentTransactionId] =
     useState(transactionId)
   const [successMessage, setSuccessMessage] = useState(null)
@@ -21,22 +19,6 @@ const TransactionForm = ({ transactionId, onUpdate }) => {
 
   useEffect(() => {
     setCurrentTransactionId(transactionId)
-    api
-      .get('/api/categories')
-      .then(response => {
-        setCategories(response.data)
-      })
-      .catch(error => {
-        console.error('Error fetching currency data:', error)
-      })
-    api
-      .get('/api/currencies')
-      .then(response => {
-        setCurrencies(response.data)
-      })
-      .catch(error => {
-        console.error('Error fetching currency data:', error)
-      })
 
     if (transactionId) {
       api
