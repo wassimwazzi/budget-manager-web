@@ -30,9 +30,10 @@ class SimpleClassifier(TextClassifier):
     It uses a pre-trained model from huggingface.
     """
 
-    def __init__(self, model="facebook/bart-large-mnli") -> None:
+    def __init__(self, model="facebook/bart-large-mnli", threshold=0.9) -> None:
         self.model = model
         self.pipe = None  # only initialize the pipeline when needed
+        self.threshold = threshold
 
     def predict(self, text, labels):
         logging.info("Simple Predicting category for %s", text)
@@ -40,6 +41,14 @@ class SimpleClassifier(TextClassifier):
             self.pipe = pipeline("zero-shot-classification", model=self.model)
         logging.debug("Simple Labels: %s", labels)
         result = self.pipe(text, labels)
+        if result["scores"][0] < self.threshold:
+            logging.debug(
+                "Label %s score %s is below threshold %s",
+                result["labels"][0],
+                result["scores"][0],
+                self.threshold,
+            )
+            return None
         predicted_label = result["labels"][0]
         logging.info("Simple Predicted label: %s", predicted_label)
         return predicted_label

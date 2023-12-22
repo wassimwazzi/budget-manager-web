@@ -6,9 +6,7 @@ from .serializers import TransactionSerializer
 from .models import Transaction
 from category.models import Category
 from django.utils import timezone
-from inference import infer_categories
-import pandas as pd
-import logging
+from .tasks import infer_categories_task
 
 
 class TransactionView(viewsets.ModelViewSet):
@@ -66,25 +64,9 @@ class TransactionView(viewsets.ModelViewSet):
 
     @action(detail=False, methods=["post"])
     def infer(self, request):
-        transactions = self.get_queryset().filter(inferred_category=True)
-        transactions_df = pd.DataFrame(
-            transactions.values_list("id", "description", "code", "category__category"),
-            columns=["id", "Description", "Code", "Category"],
-        )
-
-        categories = (
-            Category.objects.filter(user=request.user)
-            .values_list("category", flat=True)
-            .exclude(category="Other")
-        )
-        # infer_categories modifies the dataframe in place
-        transactions_df = infer_categories(transactions_df, categories)
-
-        # update the inferred categories
-        for index, row in transactions_df.iterrows():
-            transaction = Transaction.objects.get(id=row["id"])
-            transaction.category = Category.objects.get(category=row["Category"])
-            transaction.save()
-
-        serializer = TransactionSerializer(transactions, many=True)
-        return Response(serializer.data)
+        # webhook_url = request.data.get("webhook_url") or "webhook_url"
+        task = infer_categories_task.delay(request.user.id)
+        result = task.get()
+        if result:
+            return Response({"message": "Inference completed"}, status=200)
+        return Response({"message": "Inference failed"}, status=500)

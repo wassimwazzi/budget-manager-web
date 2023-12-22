@@ -15,7 +15,7 @@ def infer_categories(df, categories):
     Otherwise, use NLP to infer category
     """
     prev_inferred_transactions = Transaction.objects.filter(
-        inferred_category=True, 
+        inferred_category=True,
     ).exclude(category__category="Other")
     prev_non_inferred_transactions = Transaction.objects.filter(inferred_category=False)
     new_categories = []
@@ -24,7 +24,9 @@ def infer_categories(df, categories):
         t.code: t.category.category for t in prev_inferred_transactions if t.code
     }
     prev_inferred_descriptions = {
-        t.description: t.category.category for t in prev_inferred_transactions if t.description
+        t.description: t.category.category
+        for t in prev_inferred_transactions
+        if t.description
     }
     prev_non_inferred_codes = {
         t.code: t.category.category for t in prev_non_inferred_transactions if t.code
@@ -56,7 +58,9 @@ def infer_categories(df, categories):
 
         if code:
             # Prioritise non-inferred transactions
-            logging.debug("Searching for previous non inferred transactions with code %s", code)
+            logging.debug(
+                "Searching for previous non inferred transactions with code %s", code
+            )
             prev_code = fuzzy_search(
                 code, prev_non_inferred_codes.keys(), scorer=fuzz.token_set_ratio
             )
@@ -73,7 +77,9 @@ def infer_categories(df, categories):
                 inferred_categories.append(True)
                 continue
             # if previous transaction has same code, use that category
-            logging.debug("Searching for previous inferred transactions with code %s", code)
+            logging.debug(
+                "Searching for previous inferred transactions with code %s", code
+            )
             prev_code = fuzzy_search(
                 code, prev_inferred_codes.keys(), scorer=fuzz.token_set_ratio
             )
@@ -92,7 +98,10 @@ def infer_categories(df, categories):
 
         if description:
             # Prioritise non-inferred transactions
-            logging.debug("Searching for previous non inferred transactions with description %s", description)
+            logging.debug(
+                "Searching for previous non inferred transactions with description %s",
+                description,
+            )
             prev_description = fuzzy_search(
                 description,
                 prev_non_inferred_descriptions.keys(),
@@ -111,7 +120,10 @@ def infer_categories(df, categories):
                 inferred_categories.append(True)
                 continue
             # if previous transaction has same description, use that category
-            logging.debug("Searching for previous inferred transactions with description %s", description)
+            logging.debug(
+                "Searching for previous inferred transactions with description %s",
+                description,
+            )
             prev_description = fuzzy_search(
                 description,
                 prev_inferred_descriptions.keys(),
@@ -130,22 +142,31 @@ def infer_categories(df, categories):
                 inferred_categories.append(True)
                 continue
 
-            # if no previous transaction has same description, use NLP
-            result = text_classifier.predict(description, categories)
-            logging.debug("Inferred category using NLP for %s: %s", description, result)
-            new_categories.append(result)
-            inferred_categories.append(True)
-            # add to previous transactions
-            prev_inferred_descriptions[description] = result
-            if code:
-                prev_inferred_codes[code] = result
-        else:
-            logging.debug(
-                "Using default category Other as no description was given and couldn't match code. %s",
-                row,
-            )
-            new_categories.append("Other")
-            inferred_categories.append(True)
+        # if no previous transaction has same code or description, use NLP
+        logging.debug("Using NLP to infer category for %s", row)
+        if code:
+            prediction = text_classifier.predict(code, categories)
+            if prediction:
+                new_categories.append(prediction)
+                prev_inferred_codes[code] = prediction
+                if description:
+                    prev_inferred_descriptions[description] = prediction
+                inferred_categories.append(True)
+                continue
+        if description:
+            prediction = text_classifier.predict(description, categories)
+            if prediction:
+                new_categories.append(prediction)
+                prev_inferred_descriptions[description] = prediction
+                if code:
+                    prev_inferred_codes[code] = prediction
+                inferred_categories.append(True)
+                continue
+
+        logging.debug("Could not find a category for %s. Using Other", row)
+        new_categories.append("Other")
+        inferred_categories.append(True)
+
     df["Inferred_Category"] = inferred_categories
     df["Category"] = new_categories
     return df

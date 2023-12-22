@@ -3,6 +3,7 @@ import api from '../../api'
 import TransactionForm from './TransactionForm'
 import TableNavigator from '../../components/table/TableNavigator'
 import SearchableTable from '../../components/table/SearchableTable'
+import Status from '../../components/Status'
 import { Button } from 'react-bootstrap'
 
 const Transactions = () => {
@@ -13,6 +14,9 @@ const Transactions = () => {
   const [currencies, setCurrencies] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedColumn, setSelectedColumn] = useState('')
+  const [inferring, setInferring] = useState(false)
+  const [inferranceSuccessMessage, setInferranceSuccessMessage] = useState(null)
+  const [inferranceErrorMessage, setInferranceErrorMessage] = useState(null)
 
   useEffect(() => {
     api
@@ -75,12 +79,19 @@ const Transactions = () => {
   }
 
   const inferCategories = () => {
+    setInferring(true)
     api
       .post('/api/transactions/infer/')
       .then(response => {
-        fetchData(1)
+        setInferring(false)
+        setInferranceSuccessMessage('Categories successfully inferred')
+        setInferranceErrorMessage(null)
+        fetchData(1, selectedColumn, searchTerm)
       })
       .catch(error => {
+        setInferring(false)
+        setInferranceSuccessMessage(null)
+        setInferranceErrorMessage('Error infering categories')
         console.error('Error infering categories:', error)
       })
   }
@@ -126,10 +137,13 @@ const Transactions = () => {
         onUpdate={handleFormUpdate}
       />
 
-      <Button onClick={() => inferCategories()} className='mb-3'>
-        Re-infer categories
-      </Button>
-  
+      <div className='d-flex mb-3'>
+        <Button onClick={() => inferCategories()} className='mb-3' disabled={inferring}>
+          Re-infer categories
+        </Button>
+        <Status loading={inferring} successMessage={inferranceSuccessMessage} errorMessage={inferranceErrorMessage} />
+      </div>
+
       <SearchableTable
         columns={columns}
         data={transactions}
