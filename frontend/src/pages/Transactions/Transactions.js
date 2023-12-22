@@ -55,8 +55,7 @@ const Transactions = () => {
     }
     api
       .get(url)
-      .then(response => {
-        let data = response.data
+      .then(({ data }) => {
         setTransactions(data.results.map(transaction => ({
           ...transaction,
           category: transaction.category.category,
