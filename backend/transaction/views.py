@@ -26,6 +26,8 @@ class TransactionView(viewsets.ModelViewSet):
             # validate filter is a valid field
             if filter_field not in [f.name for f in Transaction._meta.get_fields()]:
                 raise serializers.ValidationError("Invalid filter")
+            if filter_field == "category":
+                filter_field = "category__category"
             return Transaction.objects.filter(
                 user=user, **{f"{filter_field}__icontains": filter_value}
             )
@@ -70,9 +72,11 @@ class TransactionView(viewsets.ModelViewSet):
             columns=["id", "Description", "Code", "Category"],
         )
 
-        categories = Category.objects.filter(user=request.user).values_list(
-            "category", flat=True
-        ).exclude(category="Other")
+        categories = (
+            Category.objects.filter(user=request.user)
+            .values_list("category", flat=True)
+            .exclude(category="Other")
+        )
         # infer_categories modifies the dataframe in place
         transactions_df = infer_categories(transactions_df, categories)
 

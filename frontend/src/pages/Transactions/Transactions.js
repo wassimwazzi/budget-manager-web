@@ -11,6 +11,8 @@ const Transactions = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [categories, setCategories] = useState([])
   const [currencies, setCurrencies] = useState([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedColumn, setSelectedColumn] = useState('')
 
   useEffect(() => {
     api
@@ -64,11 +66,12 @@ const Transactions = () => {
   }
 
   useEffect(() => {
-    fetchData(1)
-  }, [])
+    fetchData(1, selectedColumn, searchTerm)
+  }, [searchTerm, selectedColumn])
 
   const handleEdit = transactionId => {
     setEditTransactionId(transactionId)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const inferCategories = () => {
@@ -104,8 +107,13 @@ const Transactions = () => {
   }
 
   const searchHandler = (searchTerm, selectedColumn) => {
-    fetchData(1, selectedColumn, searchTerm)
+    setSearchTerm(searchTerm)
+    setSelectedColumn(selectedColumn)
   };
+
+  const pageHandler = page => {
+    fetchData(page, selectedColumn, searchTerm)
+  }
 
   return (
     <>
@@ -128,7 +136,7 @@ const Transactions = () => {
         searchHandler={searchHandler}
       />
 
-      <TableNavigator totalPages={totalPages} fetchData={fetchData} />
+      <TableNavigator totalPages={totalPages} fetchData={pageHandler} />
     </>
   )
 }

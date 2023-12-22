@@ -38,6 +38,7 @@ const Categories = () => {
 
     const handleEdit = categoryId => {
         setEditCategoryId(categoryId)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
     const handleFormUpdate = updatedCategory => {

@@ -62,6 +62,7 @@ const Budgets = () => {
 
     const handleEdit = budgetId => {
         setEditBudgetId(budgetId)
+        window.scrollTo({ top: 0, behavior: 'smooth' })
     }
 
     const handleFormUpdate = updatedBudget => {
