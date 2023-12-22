@@ -1,24 +1,20 @@
-from datetime import datetime
-from inference import infer_categories
-import pandas as pd
-from django.db.models.signals import post_save
-from django.db import transaction
-from django.dispatch import receiver
-from category.models import Category
+from celery import shared_task
 from transaction.models import Transaction
+from category.models import Category
 from .models import FileUpload, Status
+from django.db import transaction as db_transaction
+from datetime import datetime
+import pandas as pd
+from inference import infer_categories
 
 
-@receiver(post_save, sender=FileUpload)
-def process_file(sender, instance, created, **kwargs):
+@shared_task
+def process_file(fileupload_id):
     """
     Process file after upload
     """
-    if not created:
-        return
+    instance = FileUpload.objects.get(id=fileupload_id)
 
-    # TODO: Use Celery task to process file
-    # read file
     try:
         with open(instance.file.name, "r", encoding="utf-8") as f:
             instance.status = Status.IN_PROGRESS
@@ -82,13 +78,9 @@ def process_file(sender, instance, created, **kwargs):
             categories = [c.category for c in existing_categories]
             df = infer_categories(df, categories)
 
-            with transaction.atomic():
+            with db_transaction.atomic():
                 for index, row in df.iterrows():
-                    print("row", row)
-                    category = Category.objects.get(
-                        user=instance.user, category=row["Category"]
-                    )
-                    print("category", category)
+                    category = existing_categories.get(category=row["Category"])
                     Transaction.objects.create(
                         date=row["Date"],
                         description=row["Description"],
@@ -101,9 +93,9 @@ def process_file(sender, instance, created, **kwargs):
                     )
                 instance.status = Status.COMPLETED
                 instance.save()
+                return True
     except Exception as e:
         instance.status = Status.FAILED
         instance.message = str(e)
         instance.save()
-        raise e
-        return
+        return False

@@ -1,46 +1,55 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import api from '../../api';
-import { Form, Button, Alert, InputGroup } from 'react-bootstrap'
+import Status from '../../components/Status'
+import { Form, Button, InputGroup } from 'react-bootstrap'
 
 const FileUploadForm = (onUpdate) => {
     const [file, setFile] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(null);
+    const [errorMessage, setErrorMessage] = useState(null);
+    const [uploading, setUploading] = useState(false);
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
     };
 
-    const handleUpload = async () => {
+    const handleUpload = async (e) => {
+        e.preventDefault();
         const formData = new FormData();
         formData.append('file', file);
-        console.log('Uploading file...');
+        setUploading(true);
 
-        api({
-            method: 'post',
-            url: '/api/uploads/',
-            data: formData,
-        })
+        api
+            .post('/api/uploads/', formData)
             .then((response) => {
-                console.log('File uploaded successfully.');
+                setSuccessMessage('File uploaded successfully.');
+                setErrorMessage(null);
+                setFile(null);
+                setUploading(false);
                 onUpdate(response.data)
             })
             .catch((error) => {
+                setSuccessMessage(null);
+                setErrorMessage('Error uploading file.');
+                setUploading(false);
                 console.error('Error uploading file:', error);
             });
     };
 
     return (
-        // <div>
-        //     <input type="file" onChange={handleFileChange} />
-        //     <button onClick={handleUpload}>Upload File</button>
-        // </div>
         <Form className='mb-3' onSubmit={handleUpload}>
             <InputGroup>
                 <Form.Group controlId="formFile" className="mr-3">
                     <Form.Control type="file" onChange={handleFileChange} required />
                 </Form.Group>
-                <Button variant="primary" type='submit'>
+                <Button variant="primary" type='submit' disabled={uploading}>
                     Upload File
                 </Button>
+                <Status
+                    successMessage={successMessage}
+                    errorMessage={errorMessage}
+                    loading={uploading}
+                />
             </InputGroup>
         </Form>
     );

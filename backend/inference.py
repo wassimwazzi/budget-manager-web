@@ -119,7 +119,6 @@ def infer_categories(df, categories):
                 new_categories.append(prev_category)
                 inferred_categories.append(True)
                 continue
-            # if previous transaction has same description, use that category
             logging.debug(
                 "Searching for previous inferred transactions with description %s",
                 description,
@@ -142,31 +141,24 @@ def infer_categories(df, categories):
                 inferred_categories.append(True)
                 continue
 
-        # if no previous transaction has same code or description, use NLP
-        logging.debug("Using NLP to infer category for %s", row)
-        if code:
-            prediction = text_classifier.predict(code, categories)
-            if prediction:
-                new_categories.append(prediction)
-                prev_inferred_codes[code] = prediction
-                if description:
-                    prev_inferred_descriptions[description] = prediction
+            # if no previous transaction has same description, use NLP
+            # Only use NLP on description as we will rarely get a match on code
+            result = text_classifier.predict(description, categories)
+            if result:
+                logging.debug("Inferred category using NLP for %s: %s", description, result)
+                new_categories.append(result)
                 inferred_categories.append(True)
-                continue
-        if description:
-            prediction = text_classifier.predict(description, categories)
-            if prediction:
-                new_categories.append(prediction)
-                prev_inferred_descriptions[description] = prediction
+                # add to previous transactions
+                prev_inferred_descriptions[description] = result
                 if code:
-                    prev_inferred_codes[code] = prediction
-                inferred_categories.append(True)
+                    prev_inferred_codes[code] = result
                 continue
-
-        logging.debug("Could not find a category for %s. Using Other", row)
+        logging.debug(
+            "Using default category Other as no description was given and couldn't match code. %s",
+            row,
+        )
         new_categories.append("Other")
         inferred_categories.append(True)
-
     df["Inferred_Category"] = inferred_categories
     df["Category"] = new_categories
     return df
