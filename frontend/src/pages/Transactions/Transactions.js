@@ -55,7 +55,7 @@ const Transactions = () => {
           category: transaction.category.category,
           actions: <button onClick={() => handleEdit(transaction.id)} className='btn btn-primary'>Edit</button>
         })))
-        setTotalPages(Math.max(1, Math.ceil(data.count / data.results.length)))
+        setTotalPages(data.count === 0 ? 1 : Math.max(1, Math.ceil(data.count / data.results.length)))
       })
       .catch(error => {
         console.error('Error fetching data:', error)

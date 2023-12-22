@@ -41,7 +41,7 @@ class TransactionView(viewsets.ModelViewSet):
             category = Category.objects.get(id=category)
         except (Category.DoesNotExist, ValueError) as e:
             raise serializers.ValidationError("Category not found: {}".format(e))
-        serializer.save(user=self.request.user, category=category)
+        serializer.save(user=self.request.user, category=category, inferred_category=False)
 
     def perform_update(self, serializer):
         self.validate_date()
@@ -51,6 +51,6 @@ class TransactionView(viewsets.ModelViewSet):
                 category = Category.objects.get(id=category_id)
             except (Category.DoesNotExist, ValueError) as e:
                 raise serializers.ValidationError("Category not found: {}".format(e))
-            serializer.save(category=category)
+            serializer.save(category=category, inferred_category=False)
         else:
-            serializer.save()
+            serializer.save(inferred_category=False)

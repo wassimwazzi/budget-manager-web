@@ -37,3 +37,13 @@ class FileUpload(models.Model):
     )
     message = models.CharField(max_length=255, null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def save(self, *args, **kwargs):
+        """
+        Save file upload
+        """
+        super().save(*args, **kwargs)
+        from .signals import process_file
+
+    
+

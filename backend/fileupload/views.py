@@ -1,10 +1,15 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, mixins
 import rest_framework.serializers as serializers
 from .serializers import FileUploadSerializer
 from .models import FileUpload
 
 
-class FileUploadView(viewsets.ModelViewSet):
+class FileUploadView(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
     serializer_class = FileUploadSerializer
 
     def get_queryset(self):
