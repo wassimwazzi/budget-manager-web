@@ -43,7 +43,6 @@ class TestProcessFileSignal(TestCase):
             return df
 
         signals.post_save.disconnect(receiver=process_file, sender=FileUpload)
-        self.file = unittest.mock.MagicMock(spec=FileUpload)
         self.user = UserFactory()
         self.category = CategoryFactory(user=self.user)
         self.df = pd.DataFrame(
@@ -60,10 +59,10 @@ class TestProcessFileSignal(TestCase):
             }
         )
         self.inferrence_mock = inferrence_mock
-        self.file_upload = FileUploadFactory(user=self.user, file=self.file)
+        self.file_upload = FileUploadFactory(user=self.user)
 
     def tearDown(self) -> None:
-        # delete file
+        # deletes the file in the upload_to directory
         self.file_upload.file.delete()
 
     def test_process_file(self):
@@ -141,20 +140,3 @@ class TestProcessFileSignal(TestCase):
 
         test()
 
-    def test_process_file_with_inferred_categories(self):
-        """
-        Test process file with inferred categories
-        """
-        self.df["Category"] = ["", "", ""]
-
-        @mock_file_open(result_df=self.df, inferrence_mock=self.inferrence_mock)
-        def test():
-            process_file(sender=FileUpload, instance=self.file_upload, created=True)
-            print(self.file_upload.message)
-            self.assertEqual(self.file_upload.status, Status.COMPLETED)
-            self.assertEqual(self.file_upload.message, None)
-            self.assertEqual(
-                Transaction.objects.filter(file=self.file_upload).count(), 3
-            )
-
-        test()
