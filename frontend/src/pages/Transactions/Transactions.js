@@ -3,6 +3,7 @@ import api from '../../api'
 import TransactionForm from './TransactionForm'
 import TableNavigator from '../../components/table/TableNavigator'
 import SearchableTable from '../../components/table/SearchableTable'
+import { Button } from 'react-bootstrap'
 
 const Transactions = () => {
   const [transactions, setTransactions] = useState([])
@@ -70,6 +71,17 @@ const Transactions = () => {
     setEditTransactionId(transactionId)
   }
 
+  const inferCategories = () => {
+    api
+      .post('/api/transactions/infer/')
+      .then(response => {
+        fetchData(1)
+      })
+      .catch(error => {
+        console.error('Error infering categories:', error)
+      })
+  }
+
   const handleFormUpdate = updatedTransaction => {
     // Update transactions list after adding/editing
     updatedTransaction.actions = (
@@ -106,6 +118,10 @@ const Transactions = () => {
         onUpdate={handleFormUpdate}
       />
 
+      <Button onClick={() => inferCategories()} className='mb-3'>
+        Re-infer categories
+      </Button>
+  
       <SearchableTable
         columns={columns}
         data={transactions}

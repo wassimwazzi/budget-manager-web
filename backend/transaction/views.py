@@ -1,9 +1,14 @@
 from rest_framework import viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
 import rest_framework.serializers as serializers
 from .serializers import TransactionSerializer
 from .models import Transaction
 from category.models import Category
 from django.utils import timezone
+from inference import infer_categories
+import pandas as pd
+import logging
 
 
 class TransactionView(viewsets.ModelViewSet):
@@ -41,7 +46,9 @@ class TransactionView(viewsets.ModelViewSet):
             category = Category.objects.get(id=category)
         except (Category.DoesNotExist, ValueError) as e:
             raise serializers.ValidationError("Category not found: {}".format(e))
-        serializer.save(user=self.request.user, category=category, inferred_category=False)
+        serializer.save(
+            user=self.request.user, category=category, inferred_category=False
+        )
 
     def perform_update(self, serializer):
         self.validate_date()
@@ -54,3 +61,26 @@ class TransactionView(viewsets.ModelViewSet):
             serializer.save(category=category, inferred_category=False)
         else:
             serializer.save(inferred_category=False)
+
+    @action(detail=False, methods=["post"])
+    def infer(self, request):
+        transactions = self.get_queryset().filter(inferred_category=True)
+        transactions_df = pd.DataFrame(
+            transactions.values_list("id", "description", "code", "category__category"),
+            columns=["id", "Description", "Code", "Category"],
+        )
+
+        categories = Category.objects.filter(user=request.user).values_list(
+            "category", flat=True
+        ).exclude(category="Other")
+        # infer_categories modifies the dataframe in place
+        transactions_df = infer_categories(transactions_df, categories)
+
+        # update the inferred categories
+        for index, row in transactions_df.iterrows():
+            transaction = Transaction.objects.get(id=row["id"])
+            transaction.category = Category.objects.get(category=row["Category"])
+            transaction.save()
+
+        serializer = TransactionSerializer(transactions, many=True)
+        return Response(serializer.data)

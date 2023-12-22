@@ -7,7 +7,6 @@ from django.dispatch import receiver
 from category.models import Category
 from transaction.models import Transaction
 from .models import FileUpload, Status
-import logging
 
 
 @receiver(post_save, sender=FileUpload)
@@ -17,8 +16,6 @@ def process_file(sender, instance, created, **kwargs):
     """
     if not created:
         return
-    print("processing file")
-    logging.info("processing file")
 
     # TODO: Use Celery task to process file
     # read file
