@@ -6,6 +6,7 @@ import Login from './pages/Login/Login'
 import Transactions from './pages/Transactions/Transactions'
 import Categories from './pages/Categories/Categories'
 import Budgets from './pages/Budgets/Budgets'
+import Files from './pages/FileUploads/Files'
 import NotFound from './pages/NotFound'
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
           <Route path='/transactions' element={<Transactions />} />
           <Route path='/categories' element={<Categories />} />
           <Route path='/budgets' element={<Budgets />} />
+          <Route path='/uploads' element={<Files />} />
           <Route path='*' element={<NotFound />} />
         </Route>
       </Routes>

@@ -22,12 +22,14 @@ import category.views
 import currency.views
 import transaction.views
 import budget.views
+import fileupload.views
 
 router = routers.DefaultRouter()
 router.register(r"categories", category.views.CategoryView, "categories")
 router.register(r"currencies", currency.views.CurrencyView, "currencies")
 router.register(r"transactions", transaction.views.TransactionView, "transactions")
 router.register(r"budgets", budget.views.BudgetView, "budgets")
+router.register(r"uploads", fileupload.views.FileUploadView, "uploads")
 
 urlpatterns = [
     path("admin/", admin.site.urls),

@@ -36,6 +36,9 @@ const Layout = () => {
             <Nav.Link as={Link} to='/budgets'>
               Budgets
             </Nav.Link>
+            <Nav.Link as={Link} to='/uploads'>
+              File Uploads
+            </Nav.Link>
           </Nav>
           <Nav>
             <Nav.Link onClick={handleLogout}>Logout</Nav.Link>
