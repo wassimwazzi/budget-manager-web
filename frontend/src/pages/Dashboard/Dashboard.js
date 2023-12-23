@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Form, Container } from 'react-bootstrap'
+import { Form, Container, Card, Row, Col } from 'react-bootstrap'
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -268,41 +268,55 @@ const SummaryCard = ({ summaryData }) => {
     const totalBudget = summaryData.reduce((acc, row) => acc + row.budget, 0).toFixed(2);
     const totalSpend = summaryData.reduce((acc, row) => acc + row.actual, 0).toFixed(2);
     const totalRemaining = summaryData.reduce((acc, row) => acc + row.remaining, 0).toFixed(2);
-
+    // className="border-0 shadow-lg"
     return (
-        <div className="container mt-5">
-            <div className="card">
-                <div className="card-body">
-                    <h2 className="card-title">Spending Summary</h2>
-                    <div className="col">
-                        <div className="row-md-6">
-                            <p className="lead">Your total budget:</p>
-                            <h3 className="display-4">
-                                ${totalBudget}
-                                <span id="totalBudget"></span>
-                            </h3>
-                        </div>
-                        <div className="row-md-6">
-                            <p className="lead">Your spend:</p>
-                            <h3 className="display-4">
-                                ${totalSpend}
-                                <span id="totalSpend"></span>
-                            </h3>
-                        </div>
-                        <div className="row-md-6">
-                            <p className="lead">Your remaining amount:</p>
-                            <h3 className="display-4" style={{
-                                color: totalRemaining < 0 ? 'red' : 'green',
-                            }}>
-                                ${totalRemaining}
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <Container className="mt-5">
+            <Card border='0' className="shadow-lg">
+                <Card.Body>
+                    <Card.Title as="h2">Spending Summary</Card.Title>
+                    <Row>
+                        <Col md={4}>
+                            <Card className="border-0">
+                                <Card.Body style={{ borderBottom: '2px solid black' }}>
+                                    <p className="lead">Your total budget:</p>
+                                    <h3 className="display-4">
+                                        ${totalBudget}
+                                        <span id="totalBudget"></span>
+                                    </h3>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                        <Col md={4}>
+                            <Card className="border-0">
+                                <Card.Body style={{ borderBottom: '2px solid black' }}>
+                                    <p className="lead">Your spend:</p>
+                                    <h3 className="display-4">
+                                        ${totalSpend}
+                                        <span id="totalSpend"></span>
+                                    </h3>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                        <Col md={4}>
+                            <Card className="border-0">
+                                <Card.Body style={{
+                                    borderBottom: totalRemaining < 0 ? '2px solid red' : '2px solid green',
+                                }}>
+                                    <p className="lead">Your remaining amount:</p>
+                                    <h3 className="display-4" style={{
+                                        color: totalRemaining < 0 ? 'red' : 'green',
+                                    }}>
+                                        ${totalRemaining}
+                                    </h3>
+                                </Card.Body>
+                            </Card>
+                        </Col>
+                    </Row>
+                </Card.Body>
+            </Card>
+        </Container>
     );
-}
+};
 
 const Dashboard = () => {
     const [budgetSummary, setBudgetSummary] = useState([])
@@ -327,22 +341,28 @@ const Dashboard = () => {
         setMonth(formData.month)
     }
 
+    const PlotContainer = ({ children }) => (
+        <Card className="border-0 shadow-lg mb-3">
+            {children}
+        </Card>
+    );
+
     return (
         <>
             <h1 className="mb-4">Budget Summary for {convertToMonthYear(month)}</h1>
             <SummaryForm onUpdate={handleUpdate} />
             <SummaryCard summaryData={budgetSummary} />
 
-            <Container className="mt-4 p-4 border rounded">
-                <div className='border-bottom pb-4 mb-4'>
+            <Container className="mt-4 p-4">
+                <PlotContainer>
                     <BudgetVsActualBarChart summaryData={budgetSummary} />
-                </div>
-                <div className='border-bottom pb-4 mb-4'>
+                </PlotContainer>
+                <PlotContainer>
                     <RemainingFromBudgetBarChart summaryData={budgetSummary} />
-                </div>
-                <div className='pb-4 mb-4'>
+                </PlotContainer>
+                <PlotContainer>
                     <SpendPerCategoryPieChart summaryData={budgetSummary} />
-                </div>
+                </PlotContainer>
             </Container>
         </>
     );
