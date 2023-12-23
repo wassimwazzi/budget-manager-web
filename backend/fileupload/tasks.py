@@ -69,7 +69,9 @@ def process_file(fileupload_id):
                 and not existing_categories.filter(category=category).exists()
             ]
             if missing_categories:
-                error_msg = f"Missing categories: {', '.join(missing_categories)}"
+                error_msg = (
+                    f"These categories do not exist: {', '.join(missing_categories)}"
+                )
                 instance.status = Status.FAILED
                 instance.message = error_msg
                 instance.save()

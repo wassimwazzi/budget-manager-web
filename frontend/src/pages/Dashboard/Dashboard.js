@@ -340,7 +340,7 @@ const Dashboard = () => {
                 <div className='border-bottom pb-4 mb-4'>
                     <RemainingFromBudgetBarChart summaryData={budgetSummary} />
                 </div>
-                <div className='border-bottom pb-4 mb-4'>
+                <div className='pb-4 mb-4'>
                     <SpendPerCategoryPieChart summaryData={budgetSummary} />
                 </div>
             </Container>
