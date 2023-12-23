@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../api'
 import FileUploadForm from './FileUploadForm'
-import SearchableTable from '../../components/table/SearchableTable'
-import TableNavigator from '../../components/table/TableNavigator'
+import Table from '../../components/table/Table'
 
 const Files = () => {
     const [files, setFiles] = useState([])
     const [totalPages, setTotalPages] = useState(1)
-    const [searchTerm, setSearchTerm] = useState('')
-    const [selectedColumn, setSelectedColumn] = useState('')
 
     const columns = [
         'date',
@@ -17,13 +14,9 @@ const Files = () => {
         'message'
     ]
 
-    const fetchData = (page, filter, filter_value) => {
-        let url = `/api/uploads/?page=${page}`
-        if (filter && filter_value) {
-            url += `&filter=${filter}&filter_value=${filter_value}`
-        }
+    const fetchData = (params) => {
         api
-            .get(url)
+            .get('/api/uploads/', { params })
             .then(({ data }) => {
                 setFiles(data.results)
                 setTotalPages(data.count === 0 ? 1 : Math.max(1, Math.ceil(data.count / data.results.length)))
@@ -34,20 +27,11 @@ const Files = () => {
     }
 
     useEffect(() => {
-        fetchData(1, selectedColumn, searchTerm)
-    }, [searchTerm, selectedColumn])
+        fetchData({ page: 1 })
+    }, [])
 
     const handleFormUpdate = () => {
-        fetchData(1, selectedColumn, searchTerm)
-    }
-
-    const searchHandler = (searchTerm, selectedColumn) => {
-        setSearchTerm(searchTerm)
-        setSelectedColumn(selectedColumn)
-    };
-
-    const pageHandler = page => {
-        fetchData(page, selectedColumn, searchTerm)
+        fetchData({ page: 1 })
     }
 
     return (
@@ -58,15 +42,11 @@ const Files = () => {
                 onUpdate={handleFormUpdate}
             />
 
-            <SearchableTable
+            <Table
                 columns={columns}
                 data={files}
-                searchHandler={searchHandler}
-            />
-
-            <TableNavigator
                 totalPages={totalPages}
-                fetchData={pageHandler}
+                fetchData={fetchData}
             />
 
         </>

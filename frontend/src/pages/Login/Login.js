@@ -24,8 +24,6 @@ const Login = () => {
       .post('/api/token/', formData)
       .then(response => {
         localStorage.setItem('authToken', response.data.token)
-        // Redirect user to dashboard after login
-        console.log('Success:', response)
         window.location.href = '/'
       })
       .catch(error => {

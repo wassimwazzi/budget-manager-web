@@ -1,16 +1,68 @@
-const Table = ({ data, columns }) => {
+import React, { useState, useEffect } from 'react';
+import SearchTable from "./SearchTable";
+import TabeleNavigator from "./TableNavigator";
+
+const Table = ({ data, columns, fetchData, totalPages }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [searchColumn, setSearchColumn] = useState('');
+    const [currentData, setCurrentData] = useState(data);
+    const [sortColumn, setSortColumn] = useState(columns[0]);
+    const [sortAsc, setSortAsc] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+
+    useEffect(() => {
+        console.log(data[0]);
+        setCurrentData(data);
+    }, [data]);
+
+    useEffect(() => {
+        const params = {
+            page: currentPage,
+            sort: sortColumn,
+            order: sortAsc ? 'asc' : 'desc',
+            filter_value: searchTerm,
+            filter: searchColumn
+        };
+        fetchData(params);
+    }, [sortColumn, sortAsc, searchTerm, searchColumn, currentPage]);
+
+    const handleSearch = (searchTerm, searchColumn) => {
+        setSearchTerm(searchTerm);
+        setSearchColumn(searchColumn);
+    };
+
+    const handleSort = (column) => {
+        if (column.includes(sortColumn)) {
+            setSortAsc(!sortAsc);
+        }
+        else {
+            setSortColumn(column);
+            setSortAsc(true);
+        }
+    };
+
+    const handlePageChange = (page) => {
+        setCurrentPage(page);
+    }
+
     return (
         <div>
+            <SearchTable columns={columns} onSearch={handleSearch} />
             <table className='table table-striped'>
                 <thead>
                     <tr>
                         {columns.map(column => (
-                            <th key={column}>{column}</th>
+                            column !== 'actions' ?
+                                <th key={column} onClick={() => handleSort(column)} style={{ cursor: 'pointer' }}>
+                                    {column}
+                                </th>
+                                :
+                                <th key={column} colSpan={currentData[0] ? currentData[0].actions.length : 1}></th>
                         ))}
                     </tr>
                 </thead>
                 <tbody>
-                    {data.map((row, index) => (
+                    {currentData.map((row, index) => (
                         <tr key={index}>
                             {columns.map(column => (
                                 <td key={`${index}-${column}`}>{row[column]}</td>
@@ -19,6 +71,7 @@ const Table = ({ data, columns }) => {
                     ))}
                 </tbody>
             </table>
+            <TabeleNavigator totalPages={totalPages} onPageChange={handlePageChange} />
         </div>
     );
 };

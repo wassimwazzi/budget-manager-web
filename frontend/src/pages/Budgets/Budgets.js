@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../api'
 import BudgetForm from './BudgetForm'
-import SearchableTable from '../../components/table/SearchableTable'
+import Table from '../../components/table/Table'
 
 const Budgets = () => {
     const [budgets, setBudgets] = useState([])
     const [editBudgetId, setEditBudgetId] = useState(null)
     const [categories, setCategories] = useState([])
     const [currencies, setCurrencies] = useState([])
+    const [totalPages, setTotalPages] = useState(1)
 
     useEffect(() => {
+        fetchData({ page: 1 })
         api
-            .get('/api/categories/')
+            .get('/api/categories/?paginate=false')
             .then(response => {
                 setCategories(response.data)
             })
@@ -19,7 +21,7 @@ const Budgets = () => {
                 console.error('Error fetching currency data:', error)
             })
         api
-            .get('/api/currencies/')
+            .get('/api/currencies/?paginate=false')
             .then(response => {
                 setCurrencies(response.data)
             })
@@ -36,29 +38,21 @@ const Budgets = () => {
         'actions'
     ]
 
-    const fetchData = (filter = null, filter_value = null) => {
-        let url = `/api/budgets/`
-        if (filter && filter_value) {
-            url += `&filter=${filter}&filter_value=${filter_value}`
-        }
+    const fetchData = (params) => {
         api
-            .get(url)
-            .then(response => {
-                console.log(response.data)
-                setBudgets(response.data.map(budget => ({
+            .get('/api/budgets/', { params })
+            .then(({ data }) => {
+                setBudgets(data.results.map(budget => ({
                     ...budget,
                     category: budget.category.category,
                     actions: <button onClick={() => handleEdit(budget.id)} className='btn btn-primary'>Edit</button>
                 })))
+                setTotalPages(data.count === 0 ? 1 : Math.max(1, Math.ceil(data.count / data.results.length)))
             })
             .catch(error => {
                 console.error('Error fetching data:', error)
             })
     }
-
-    useEffect(() => {
-        fetchData()
-    }, [])
 
     const handleEdit = budgetId => {
         setEditBudgetId(budgetId)
@@ -97,9 +91,11 @@ const Budgets = () => {
                 onUpdate={handleFormUpdate}
             />
 
-            <SearchableTable
+            <Table
                 columns={columns}
                 data={budgets}
+                fetchData={fetchData}
+                totalPages={totalPages}
             />
 
         </>

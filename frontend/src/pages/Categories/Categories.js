@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../api'
 import CategoryForm from './CategoryForm'
-import SearchableTable from '../../components/table/SearchableTable'
+import Table from '../../components/table/Table'
 
 const Categories = () => {
     const [categories, setCategories] = useState([])
     const [editCategoryId, setEditCategoryId] = useState(null)
+    const [totalPages, setTotalPages] = useState(1)
 
     const columns = [
         'description',
@@ -14,18 +15,16 @@ const Categories = () => {
         'actions'
     ]
 
-    const fetchData = (filter = null, filter_value = null) => {
-        let url = `/api/categories/`
-        if (filter && filter_value) {
-            url += `&filter=${filter}&filter_value=${filter_value}`
-        }
+    const fetchData = (params) => {
         api
-            .get(url)
-            .then(response => {
-                setCategories(response.data.map(category => ({
+            .get('/api/categories/', { params })
+            .then(({ data }) => {
+                setCategories(data.results.map(category => ({
                     ...category,
+                    income: category.income ? 'Yes' : 'No',
                     actions: <button onClick={() => handleEdit(category.id)} className='btn btn-primary'>Edit</button>
                 })))
+                setTotalPages(data.count === 0 ? 1 : Math.max(1, Math.ceil(data.count / data.results.length)))
             })
             .catch(error => {
                 console.error('Error fetching data:', error)
@@ -33,7 +32,7 @@ const Categories = () => {
     }
 
     useEffect(() => {
-        fetchData()
+        fetchData({ page: 1 })
     }, [])
 
     const handleEdit = categoryId => {
@@ -70,9 +69,11 @@ const Categories = () => {
                 onUpdate={handleFormUpdate}
             />
 
-            <SearchableTable
+            <Table
                 columns={columns}
                 data={categories}
+                fetchData={fetchData}
+                totalPages={totalPages}
             />
 
         </>

@@ -10,7 +10,6 @@ import rest_framework.serializers as serializers
 
 class BudgetView(viewsets.ModelViewSet):
     serializer_class = BudgetSerializer
-    pagination_class = None
 
     def get_queryset(self):
         """

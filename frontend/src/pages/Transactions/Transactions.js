@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import api from '../../api'
 import TransactionForm from './TransactionForm'
-import TableNavigator from '../../components/table/TableNavigator'
-import SearchableTable from '../../components/table/SearchableTable'
+import Table from '../../components/table/Table'
 import Status from '../../components/Status'
 import { Button } from 'react-bootstrap'
 
@@ -12,15 +11,14 @@ const Transactions = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [categories, setCategories] = useState([])
   const [currencies, setCurrencies] = useState([])
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedColumn, setSelectedColumn] = useState('')
   const [inferring, setInferring] = useState(false)
   const [inferranceSuccessMessage, setInferranceSuccessMessage] = useState(null)
   const [inferranceErrorMessage, setInferranceErrorMessage] = useState(null)
 
   useEffect(() => {
+    fetchData({ page: 1 })
     api
-      .get('/api/categories/')
+      .get('/api/categories/?paginate=false')
       .then(response => {
         setCategories(response.data)
       })
@@ -28,7 +26,7 @@ const Transactions = () => {
         console.error('Error fetching currency data:', error)
       })
     api
-      .get('/api/currencies/')
+      .get('/api/currencies/?paginate=false')
       .then(response => {
         setCurrencies(response.data)
       })
@@ -48,13 +46,9 @@ const Transactions = () => {
     'actions'
   ]
 
-  const fetchData = (page, filter = null, filter_value = null) => {
-    let url = `/api/transactions/?page=${page}`
-    if (filter && filter_value) {
-      url += `&filter=${filter}&filter_value=${filter_value}`
-    }
+  const fetchData = (params) => {
     api
-      .get(url)
+      .get('/api/transactions/', { params })
       .then(({ data }) => {
         setTransactions(data.results.map(transaction => ({
           ...transaction,
@@ -67,10 +61,6 @@ const Transactions = () => {
         console.error('Error fetching data:', error)
       })
   }
-
-  useEffect(() => {
-    fetchData(1, selectedColumn, searchTerm)
-  }, [searchTerm, selectedColumn])
 
   const handleEdit = transactionId => {
     setEditTransactionId(transactionId)
@@ -85,7 +75,8 @@ const Transactions = () => {
         setInferring(false)
         setInferranceSuccessMessage('Categories successfully inferred')
         setInferranceErrorMessage(null)
-        fetchData(1, selectedColumn, searchTerm)
+        // fetchData(1, selectedColumn, searchTerm)
+        fetchData({ page: 1 })
       })
       .catch(error => {
         setInferring(false)
@@ -116,15 +107,6 @@ const Transactions = () => {
     setEditTransactionId(null)
   }
 
-  const searchHandler = (searchTerm, selectedColumn) => {
-    setSearchTerm(searchTerm)
-    setSelectedColumn(selectedColumn)
-  };
-
-  const pageHandler = page => {
-    fetchData(page, selectedColumn, searchTerm)
-  }
-
   return (
     <>
       <h1>Transactions</h1>
@@ -137,19 +119,18 @@ const Transactions = () => {
       />
 
       <div className='d-flex mb-3'>
-        <Button onClick={() => inferCategories()} className='mb-3' disabled={inferring}>
+        <Button onClick={inferCategories} className='mb-3' disabled={inferring}>
           Re-infer categories
         </Button>
         <Status loading={inferring} successMessage={inferranceSuccessMessage} errorMessage={inferranceErrorMessage} />
       </div>
 
-      <SearchableTable
+      <Table
         columns={columns}
         data={transactions}
-        searchHandler={searchHandler}
+        totalPages={totalPages}
+        fetchData={fetchData}
       />
-
-      <TableNavigator totalPages={totalPages} fetchData={pageHandler} />
     </>
   )
 }

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from 'react-bootstrap'
 
-const TableNavigator = ({ totalPages, fetchData }) => {
+const TableNavigator = ({ totalPages, onPageChange }) => {
     const [page, setPage] = useState(1)
 
     useEffect(() => {
-        fetchData(page)
+        onPageChange(page)
     }, [page])
 
     const handleFirst = () => {
