@@ -31,15 +31,7 @@ class FileUploadView(
             )
         return FileUpload.objects.filter(user=user)
 
-    # def perform_create(self, serializer):
-    #     serializer.save(user=self.request.user)
-    #     task = process_file.delay(serializer.data["id"])
-    #     result = task.get()
-    #     if not result:
-    #         raise serializers.ValidationError("Failed to process file")
-
     def create(self, request, *args, **kwargs):
-        print("Creating file upload")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         file_upload = serializer.save(user=self.request.user)

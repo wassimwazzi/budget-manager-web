@@ -14,3 +14,7 @@ class CategoryView(viewsets.ModelViewSet):
         """
         user = self.request.user
         return Category.objects.filter(user=user)
+
+    def perform_create(self, serializer):
+        print(self.request.user)
+        serializer.save(user=self.request.user)

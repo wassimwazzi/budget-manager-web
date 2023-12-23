@@ -37,8 +37,8 @@ const Files = () => {
         fetchData(1, selectedColumn, searchTerm)
     }, [searchTerm, selectedColumn])
 
-    const handleFormUpdate = updatedFile => {
-        setFiles([updatedFile, ...files])
+    const handleFormUpdate = () => {
+        fetchData(1, selectedColumn, searchTerm)
     }
 
     const searchHandler = (searchTerm, selectedColumn) => {

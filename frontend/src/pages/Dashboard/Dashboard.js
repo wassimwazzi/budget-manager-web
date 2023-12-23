@@ -1,6 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import { Form, Button } from 'react-bootstrap'
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
 import api from '../../api'
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 const SummaryForm = ({ onUpdate }) => {
     const initialFormData = Object.freeze({
@@ -63,8 +82,125 @@ function convertToMonthYear(yyyyMM) {
     return `${monthName} ${fullYear}`;
 }
 
+const SummaryTable = ({ data }) => {
+    const cols = [
+        'category',
+        'budget',
+        'actual',
+        'remaining'
+    ]
+    const totalsRow = {
+        category: 'Total',
+        budget: data.reduce((acc, row) => acc + row.budget, 0),
+        actual: data.reduce((acc, row) => acc + row.actual, 0),
+        remaining: data.reduce((acc, row) => acc + row.remaining, 0)
+    }
+
+    const getRowColor = row => {
+        const ratio = row.ratio;
+        const color = getColorForRatio(ratio);
+        return `#${color[0].toString(16).padStart(2, '0')}${color[1].toString(16).padStart(2, '0')}${color[2].toString(16).padStart(2, '0')}`;
+    };
+
+    const getColorForRatio = ratio => {
+        // 0 means you are over the budget, 1 means you are under the budget, 0.5 means you are at the budget
+        const green = Math.floor(255 * ratio);
+        const red = 255 - green;
+        return [red, green, 0];
+    }
+    return (
+        <table className='table' style={{ border: '1px solid #ddd' }}>
+            <thead>
+                <tr style={{ backgroundColor: '#e0e9f0' }}>
+                    {cols.map(column => (
+                        <th key={column}>{column}</th>
+                    ))}
+                </tr>
+            </thead>
+            <tbody>
+                {data.map((row, index) => (
+                    <tr key={index} style={{ backgroundColor: getRowColor(row) }}>
+                        {cols.map(column => (
+                            <td key={`${index}-${column}`}>{row[column]}</td>
+                        ))}
+                    </tr>
+                ))}
+                <tr key={'total'} style={{ backgroundColor: '#e0e9f0' }}>
+                    {cols.map(column => (
+                        <td key={`total-${column}`}>{totalsRow[column]}</td>
+                    ))}
+                </tr>
+            </tbody>
+        </table>
+    )
+}
+
+const BudgetVsActualBarChart = ({ summaryData }) => {
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+        },
+    };
+    const labels = summaryData.map(item => item.category);
+    summaryData.sort((a, b) => b.budget - a.budget);
+
+    const data = {
+        labels,
+        datasets: [
+            {
+                label: 'Budget',
+                data: summaryData.map(item => item.budget),
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                maxBarThickness: 75,
+            },
+            {
+                label: 'Actual Spend',
+                data: summaryData.map(item => item.actual),
+                backgroundColor: 'rgba(53, 162, 235, 0.5)',
+                maxBarThickness: 75,
+            },
+        ],
+    };
+
+    return (
+        <Bar data={data} options={options} />
+    );
+};
+
+const RemainingFromBudgetBarChart = ({ summaryData }) => {
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+        },
+    };
+    const labels = summaryData.map(item => item.category);
+    summaryData.sort((a, b) => b.remaining - a.remaining);
+
+    const data = {
+        labels,
+        datasets: [
+            {
+                label: 'Remaining',
+                data: summaryData.map(item => item.remaining),
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                maxBarThickness: 150,
+            }
+        ],
+    };
+
+    return (
+        <Bar data={data} options={options} />
+    );
+}
+
 const Dashboard = () => {
-    const [budget_summary, setBudgetSummary] = useState([])
+    const [budgetSummary, setBudgetSummary] = useState([])
     const [month, setMonth] = useState(getCurrentMonth())
     const sigmoid = x => 1 / (1 + Math.exp(-x));
 
@@ -82,57 +218,19 @@ const Dashboard = () => {
             })
     }, [month])
 
-    useEffect(() => {
-        console.log('Budget summary:', budget_summary.map(row => [row.ratio, row.category]))
-    }, [budget_summary])
-
     const handleUpdate = formData => {
         setMonth(formData.month)
-    }
-    const summary_columns = [
-        'category',
-        'budget',
-        'actual',
-        'remaining'
-    ]
-
-    const getRowColor = row => {
-        const ratio = row.ratio;
-        const color = getColorForRatio(ratio);
-        return `#${color[0].toString(16).padStart(2, '0')}${color[1].toString(16).padStart(2, '0')}${color[2].toString(16).padStart(2, '0')}`;
-    };
-
-    const getColorForRatio = ratio => {
-        // 0 means you are over the budget, 1 means you are under the budget, 0.5 means you are at the budget
-        const green = Math.floor(255 * ratio);
-        const red = 255 - green;
-        return [red, green, 0];
     }
 
     return (
         <>
             <h1>Budget Summary for {convertToMonthYear(month)}</h1>
             <SummaryForm onUpdate={handleUpdate} />
-            <table className='table table-striped'>
-                <thead>
-                    <tr>
-                        {summary_columns.map(column => (
-                            <th key={column}>{column}</th>
-                        ))}
-                    </tr>
-                </thead>
-                <tbody>
-                    {budget_summary.map((row, index) => (
-                        <tr key={index} style={{ backgroundColor: getRowColor(row) }}>
-                            {summary_columns.map(column => (
-                                <td key={`${index}-${column}`}>{row[column]}</td>
-                            ))}
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+            <SummaryTable data={budgetSummary} />
+            <BudgetVsActualBarChart summaryData={budgetSummary} />
+            <RemainingFromBudgetBarChart summaryData={budgetSummary} />
         </>
-    )
+    );
 };
 
 export default Dashboard;

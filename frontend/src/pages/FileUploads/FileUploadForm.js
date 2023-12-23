@@ -3,7 +3,7 @@ import api from '../../api';
 import Status from '../../components/Status'
 import { Form, Button, InputGroup } from 'react-bootstrap'
 
-const FileUploadForm = (onUpdate) => {
+const FileUploadForm = ({ onUpdate }) => {
     const [file, setFile] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
     const [errorMessage, setErrorMessage] = useState(null);
@@ -26,13 +26,14 @@ const FileUploadForm = (onUpdate) => {
                 setErrorMessage(null);
                 setFile(null);
                 setUploading(false);
-                onUpdate(response.data)
+                onUpdate()
             })
             .catch((error) => {
                 setSuccessMessage(null);
                 setErrorMessage('Error uploading file.');
                 setUploading(false);
                 console.error('Error uploading file:', error);
+                onUpdate()
             });
     };
 

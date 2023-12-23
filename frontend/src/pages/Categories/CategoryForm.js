@@ -4,7 +4,7 @@ import { Form, Button, Alert } from 'react-bootstrap'
 
 const CategoryForm = ({ categoryId, onUpdate }) => {
     const initialFormData = Object.freeze({
-        income: '',
+        income: false,
         category: '',
         description: '',
     })
@@ -59,7 +59,7 @@ const CategoryForm = ({ categoryId, onUpdate }) => {
             })
             .catch(error => {
                 setSuccessMessage(null)
-                setErrorMessage(error.response.data)
+                setErrorMessage('Error submitting category data')
                 console.error('Error submitting category data:', error.response.data)
             })
     }

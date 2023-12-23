@@ -23,12 +23,11 @@ DEFAULT_CATEGORIES = [
     ("Entertainment", False, "Entertainment"),
     ("Clothing", False, "Clothing"),
     ("Education", False, "Education"),
-    ("Style", False, "Haircuts, skin care, ..."),
     ("Gifts", False, "Gifts"),
-    ("Health", False, "Health"),
+    ("Self Care", False, "Health, beauty, massage, etc."),
     ("Travel", False, "Travel"),
     ("Investments", False, "Investments"),
-    ("Other", False, "Other"),
+    ("Other", False, "No specific category"),
 ]
 
 
