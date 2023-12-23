@@ -1,0 +1,6 @@
+[submodule "frontend-budget-manager"]
+	path = frontend-budget-manager
+	url = git@github.com:wassimwazzi/frontend-budget-manager.git
+[submodule "backend-budget-manager"]
+	path = backend-budget-manager
+	url = git@github.com:wassimwazzi/backend-budget-manager.git
