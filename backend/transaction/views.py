@@ -26,10 +26,26 @@ class TransactionView(viewsets.ModelViewSet):
                 raise serializers.ValidationError("Invalid filter")
             if filter_field == "category":
                 filter_field = "category__category"
-            return Transaction.objects.filter(
+            queryset = Transaction.objects.filter(
                 user=user, **{f"{filter_field}__icontains": filter_value}
             )
-        return Transaction.objects.filter(user=user)
+        else:
+            queryset = Transaction.objects.filter(user=user)
+        sort_field = self.request.query_params.get("sort", None)
+        sort_order = self.request.query_params.get("order", None)
+        if sort_field and sort_order:
+            if sort_field not in [f.name for f in Transaction._meta.get_fields()]:
+                raise serializers.ValidationError("Invalid sort field")
+            if sort_field == "category":
+                sort_field = "category__category"
+            if sort_order not in ["asc", "desc"]:
+                raise serializers.ValidationError(
+                    "Invalid sort order, must be asc or desc"
+                )
+            queryset = queryset.order_by(
+                f"{'' if sort_order == 'asc' else '-'}{sort_field}"
+            )
+        return queryset
 
     def validate_date(self):
         date = self.request.data.get("date")

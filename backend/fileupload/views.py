@@ -26,10 +26,24 @@ class FileUploadView(
             # validate filter is a valid field
             if filter_field not in [f.name for f in FileUpload._meta.get_fields()]:
                 raise serializers.ValidationError("Invalid filter")
-            return FileUpload.objects.filter(
+            queryset = FileUpload.objects.filter(
                 user=user, **{f"{filter_field}__icontains": filter_value}
             )
-        return FileUpload.objects.filter(user=user)
+        else:
+            queryset = FileUpload.objects.filter(user=user)
+        sort_field = self.request.query_params.get("sort", None)
+        sort_order = self.request.query_params.get("order", None)
+        if sort_field and sort_order:
+            if sort_field not in [f.name for f in FileUpload._meta.get_fields()]:
+                raise serializers.ValidationError("Invalid sort field")
+            if sort_order not in ["asc", "desc"]:
+                raise serializers.ValidationError(
+                    "Invalid sort order, must be asc or desc"
+                )
+            queryset = queryset.order_by(
+                f"{'' if sort_order == 'asc' else '-'}{sort_field}"
+            )
+        return queryset
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
