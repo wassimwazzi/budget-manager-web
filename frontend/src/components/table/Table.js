@@ -11,7 +11,6 @@ const Table = ({ data, columns, fetchData, totalPages }) => {
     const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
-        console.log(data[0]);
         setCurrentData(data);
     }, [data]);
 
@@ -54,7 +53,7 @@ const Table = ({ data, columns, fetchData, totalPages }) => {
                         {columns.map(column => (
                             column !== 'actions' ?
                                 <th key={column} onClick={() => handleSort(column)} style={{ cursor: 'pointer' }}>
-                                    {column}
+                                    {column === sortColumn ? (sortAsc ? `${column} ▲` : `${column} ▼`) : column}
                                 </th>
                                 :
                                 <th key={column} colSpan={currentData[0] ? currentData[0].actions.length : 1}></th>

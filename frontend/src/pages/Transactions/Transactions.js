@@ -15,8 +15,14 @@ const Transactions = () => {
   const [inferranceSuccessMessage, setInferranceSuccessMessage] = useState(null)
   const [inferranceErrorMessage, setInferranceErrorMessage] = useState(null)
 
+  const getActionButtons = transactionId => (
+    <>
+      <button onClick={() => handleEdit(transactionId)} className='btn btn-primary'>Edit</button>
+      <button onClick={() => handleDelete(transactionId)} className='btn btn-danger ml-2'>Delete</button>
+    </>
+  )
+
   useEffect(() => {
-    fetchData({ page: 1 })
     api
       .get('/api/categories/?paginate=false')
       .then(response => {
@@ -53,7 +59,7 @@ const Transactions = () => {
         setTransactions(data.results.map(transaction => ({
           ...transaction,
           category: transaction.category.category,
-          actions: <button onClick={() => handleEdit(transaction.id)} className='btn btn-primary'>Edit</button>
+          actions: getActionButtons(transaction.id)
         })))
         setTotalPages(data.count === 0 ? 1 : Math.max(1, Math.ceil(data.count / data.results.length)))
       })
@@ -67,6 +73,22 @@ const Transactions = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const handleDelete = transactionId => {
+    const shouldDelete = window.confirm("Are you sure?");
+    if (!shouldDelete) {
+      return
+    }
+    api
+      .delete(`/api/transactions/${transactionId}/`)
+      .then(response => {
+        setTransactions(transactions.filter(transaction => transaction.id !== transactionId))
+      })
+      .catch(error => {
+        console.error('Error deleting transaction:', error)
+      })
+  }
+
+
   const inferCategories = () => {
     setInferring(true)
     api
@@ -75,7 +97,6 @@ const Transactions = () => {
         setInferring(false)
         setInferranceSuccessMessage('Categories successfully inferred')
         setInferranceErrorMessage(null)
-        // fetchData(1, selectedColumn, searchTerm)
         fetchData({ page: 1 })
       })
       .catch(error => {
@@ -88,11 +109,7 @@ const Transactions = () => {
 
   const handleFormUpdate = updatedTransaction => {
     // Update transactions list after adding/editing
-    updatedTransaction.actions = (
-      <button onClick={() => handleEdit(updatedTransaction.id)} className='btn btn-primary'>
-        Edit
-      </button>
-    )
+    updatedTransaction.actions = getActionButtons(updatedTransaction.id)
     updatedTransaction.category = updatedTransaction.category.category
     if (editTransactionId) {
       const updatedTransactions = transactions.map(transaction =>

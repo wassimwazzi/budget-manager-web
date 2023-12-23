@@ -1,12 +1,20 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import api from '../../api'
 import CategoryForm from './CategoryForm'
 import Table from '../../components/table/Table'
+import { Button } from 'react-bootstrap'
 
 const Categories = () => {
     const [categories, setCategories] = useState([])
     const [editCategoryId, setEditCategoryId] = useState(null)
     const [totalPages, setTotalPages] = useState(1)
+
+    const getActionButtons = categoryId => (
+        <>
+            <Button onClick={() => handleEdit(categoryId)} className='btn btn-primary'>Edit</Button>
+            <Button onClick={() => handleDelete(categoryId)} className='btn btn-danger ml-2'>Delete</Button>
+        </>
+    )
 
     const columns = [
         'description',
@@ -22,7 +30,7 @@ const Categories = () => {
                 setCategories(data.results.map(category => ({
                     ...category,
                     income: category.income ? 'Yes' : 'No',
-                    actions: <button onClick={() => handleEdit(category.id)} className='btn btn-primary'>Edit</button>
+                    actions: getActionButtons(category.id)
                 })))
                 setTotalPages(data.count === 0 ? 1 : Math.max(1, Math.ceil(data.count / data.results.length)))
             })
@@ -31,13 +39,24 @@ const Categories = () => {
             })
     }
 
-    useEffect(() => {
-        fetchData({ page: 1 })
-    }, [])
-
     const handleEdit = categoryId => {
         setEditCategoryId(categoryId)
         window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+
+    const handleDelete = categoryId => {
+        const shouldDelete = window.confirm("Are you sure?");
+        if (!shouldDelete) {
+            return
+        }
+        api
+            .delete(`/api/categories/${categoryId}/`)
+            .then(response => {
+                setCategories(categories.filter(category => category.id !== categoryId))
+            })
+            .catch(error => {
+                console.error('Error deleting category:', error)
+            })
     }
 
     const handleFormUpdate = updatedCategory => {
