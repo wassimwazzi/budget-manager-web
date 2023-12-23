@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from 'react'
-import { Form, Button } from 'react-bootstrap'
+import { Form, Container } from 'react-bootstrap'
 import {
     Chart as ChartJS,
     CategoryScale,
     LinearScale,
     BarElement,
+    ArcElement,
     Title,
     Tooltip,
     Legend,
 } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Bar, Pie } from 'react-chartjs-2';
 import api from '../../api'
 
 ChartJS.register(
     CategoryScale,
     LinearScale,
     BarElement,
+    ArcElement,
     Title,
     Tooltip,
     Legend
@@ -23,7 +25,7 @@ ChartJS.register(
 
 const SummaryForm = ({ onUpdate }) => {
     const initialFormData = Object.freeze({
-        month: '',
+        month: getCurrentMonth(),
     })
     const [formData, setFormData] = useState(initialFormData)
 
@@ -35,13 +37,12 @@ const SummaryForm = ({ onUpdate }) => {
         }))
     }
 
-    const handleSubmit = e => {
-        e.preventDefault()
+    useEffect(() => {
         onUpdate(formData)
-    }
+    }, [formData])
 
     return (
-        <Form onSubmit={handleSubmit}>
+        <Form>
             <Form.Group controlId='formMonth' className='mb-3'>
                 <Form.Label>Month</Form.Label>
                 <Form.Control
@@ -51,9 +52,6 @@ const SummaryForm = ({ onUpdate }) => {
                     onChange={handleChange}
                 />
             </Form.Group>
-            <Button variant='primary' type='submit' className='mb-3'>
-                Submit
-            </Button>
         </Form>
     )
 
@@ -199,6 +197,113 @@ const RemainingFromBudgetBarChart = ({ summaryData }) => {
     );
 }
 
+const SpendPerCategoryPieChart = ({ summaryData }) => {
+    // const getColorArray = (numColors) => {
+    //     const colors = [];
+    //     for (let i = 0; i < numColors; i++) {
+    //         colors.push([Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)]);
+    //     }
+    //     return colors;
+    // }
+    const HSLToRGB = (h, s, l) => {
+        s /= 100;
+        l /= 100;
+        const k = n => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = n =>
+            l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        return [255 * f(0), 255 * f(8), 255 * f(4)];
+    };
+
+    const getColorArray = (numColors) => {
+        const colors = [];
+        const step = 360 / numColors;
+
+        for (let i = 0; i < numColors; i++) {
+            const hue = i * step;
+            const color = HSLToRGB(hue, 100, 50);
+            colors.push(color);
+        }
+
+        return colors;
+    };
+
+    const options = {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: '% of Total Spend per Category'
+            }
+        },
+        radius: '70%'
+    };
+    const labels = summaryData.map(item => item.category);
+    const totalSpend = summaryData.reduce((acc, row) => acc + row.actual, 0);
+    const colors = getColorArray(summaryData.length);
+
+    const data = {
+        labels,
+        datasets: [
+            {
+                label: 'Actual Spend',
+                data: summaryData.map(item => Math.round(item.actual * 100 / totalSpend)),
+                backgroundColor: colors.map(color => `rgba(${color[0]}, ${color[1]}, ${color[2]}, 0.5)`),
+                borderColor: colors.map(color => `rgba(${color[0]}, ${color[1]}, ${color[2]}, 1)`),
+                // backgroundColor: colors,
+                // borderColor: colors,
+            },
+        ],
+    };
+
+    return (
+        <Pie data={data} options={options} />
+    );
+}
+
+const SummaryCard = ({ summaryData }) => {
+    const totalBudget = summaryData.reduce((acc, row) => acc + row.budget, 0).toFixed(2);
+    const totalSpend = summaryData.reduce((acc, row) => acc + row.actual, 0).toFixed(2);
+    const totalRemaining = summaryData.reduce((acc, row) => acc + row.remaining, 0).toFixed(2);
+
+    return (
+        <div className="container mt-5">
+            <div className="card">
+                <div className="card-body">
+                    <h2 className="card-title">Spending Summary</h2>
+                    <div className="col">
+                        <div className="row-md-6">
+                            <p className="lead">Your total budget:</p>
+                            <h3 className="display-4">
+                                ${totalBudget}
+                                <span id="totalBudget"></span>
+                            </h3>
+                        </div>
+                        <div className="row-md-6">
+                            <p className="lead">Your spend:</p>
+                            <h3 className="display-4">
+                                ${totalSpend}
+                                <span id="totalSpend"></span>
+                            </h3>
+                        </div>
+                        <div className="row-md-6">
+                            <p className="lead">Your remaining amount:</p>
+                            <h3 className="display-4" style={{
+                                color: totalRemaining < 0 ? 'red' : 'green',
+                            }}>
+                                ${totalRemaining}
+                            </h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 const Dashboard = () => {
     const [budgetSummary, setBudgetSummary] = useState([])
     const [month, setMonth] = useState(getCurrentMonth())
@@ -224,11 +329,21 @@ const Dashboard = () => {
 
     return (
         <>
-            <h1>Budget Summary for {convertToMonthYear(month)}</h1>
+            <h1 className="mb-4">Budget Summary for {convertToMonthYear(month)}</h1>
             <SummaryForm onUpdate={handleUpdate} />
-            <SummaryTable data={budgetSummary} />
-            <BudgetVsActualBarChart summaryData={budgetSummary} />
-            <RemainingFromBudgetBarChart summaryData={budgetSummary} />
+            <SummaryCard summaryData={budgetSummary} />
+
+            <Container className="mt-4 p-4 border rounded">
+                <div className='border-bottom pb-4 mb-4'>
+                    <BudgetVsActualBarChart summaryData={budgetSummary} />
+                </div>
+                <div className='border-bottom pb-4 mb-4'>
+                    <RemainingFromBudgetBarChart summaryData={budgetSummary} />
+                </div>
+                <div className='border-bottom pb-4 mb-4'>
+                    <SpendPerCategoryPieChart summaryData={budgetSummary} />
+                </div>
+            </Container>
         </>
     );
 };
