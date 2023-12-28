@@ -13,19 +13,15 @@ npm install
 npm start &
 frontend_pid=$!
 
-# Start Redis server
-cd ../backend-manager
-redis-server &
-redis_pid=$!
-
-# Start Celery worker
-celery -A backend worker -l info &
-celery_pid=$!
+# Start huey
+cd ../backend-budget-manager
+python manage.py run_huey &
+huey_pid=$!
 
 cleanup() {
     echo "Cleaning up and stopping processes..."
-    kill $backend_pid $frontend_pid $redis_pid $celery_pid
-    wait $backend_pid $frontend_pid $redis_pid $celery_pid
+    kill $backend_pid $frontend_pid $huey_pid
+    wait $backend_pid $frontend_pid $huey_pid
     echo "Processes terminated."
 }
 
