@@ -1,0 +1,32 @@
+{
+    "restoreTerminals.terminals": [
+        {
+          "splitTerminals": [
+            {
+              "name": "frontend server",
+              "commands": ["cd frontend-budget-manager", "npm install", "npm start"]
+            },
+            {
+              "name": "backend server",
+              "commands": ["cd backend-budget-manager", ". venv/bin/activate", "python manage.py migrate", "python manage.py runserver"]
+            },
+          ]
+        },
+        {
+          "splitTerminals": [
+            {
+              "name": "frontend shell",
+              "commands": ["cd frontend-budget-manager"]
+            },
+          ]
+        },
+        {
+            "splitTerminals": [
+              {
+                "name": "backend shell",
+                "commands": ["cd backend-budget-manager", ". venv/bin/activate"]
+              }
+            ]
+          }
+      ]    
+}
