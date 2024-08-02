@@ -1,6 +1,9 @@
 # budget-manager-web
 
 Website to track spending and budget
+- Goal setting and planning
+- Automated transaction retrieval and categorization
+- Detailed Financial statement and dashboard
 
 # Links
 
@@ -10,4 +13,3 @@ Website to track spending and budget
 
 Or, try it out with [Postman](https://www.postman.com/spaceflight-cosmologist-42752282/workspace/budget-manager/overview)
 
-<b> For more information, see the submodules: </b>
