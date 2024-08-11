@@ -1,3 +1,6 @@
+#!/bin/bash
+cd "$(dirname "$0")"
+
 # Start backend Django server
 cd backend-budget-manager
 . venv/bin/activate
