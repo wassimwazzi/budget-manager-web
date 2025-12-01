@@ -27,6 +27,15 @@
                 "commands": ["cd backend-budget-manager", ". venv/bin/activate"]
               }
             ]
-          }
+        },
+        {
+            "splitTerminals": [
+              {
+                "name": "ngrok",
+                "commands": ["ngrok http 8000"]
+              }
+            ]
+        }
+
       ]    
 }

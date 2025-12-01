@@ -1,6 +1,13 @@
 uploads/
 logs/
 dump.rdb
+*db.sqlite3*
+db.sqlite3.dev.bak
+latest.dump
+mydb.dump
+mydb.sql
+mydb.sql.bak
+reset.sql
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
